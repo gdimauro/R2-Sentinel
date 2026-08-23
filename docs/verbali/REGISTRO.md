@@ -5,7 +5,7 @@ l'immutabilità**: `scripts/ci/check_verbali.py` fallisce se un verbale
 già protocollato viene modificato. Un atto sbagliato non si corregge:
 si emette un nuovo verbale che lo rettifica.
 
-Atti protocollati: **7**
+Atti protocollati: **8**
 
 | Protocollo | Data | Tipo | Oggetto | Esito | Impronta |
 |---|---|---|---|---|---|
@@ -16,3 +16,4 @@ Atti protocollati: **7**
 | [VRB-2026-0005](VRB-2026-0005.md) | 2026-08-24 | contestazione | Contestazione dell'architettura della base mobile | in attesa | `e2d16bb3e2dfcfe6` |
 | [VRB-2026-0006](VRB-2026-0006.md) | 2026-08-24 | contestazione | Ammanco del 9 per cento sui campioni registrati | accolta parzialmente | `a8bdcab7d30d841a` |
 | [VRB-2026-0007](VRB-2026-0007.md) | 2026-08-24 | decisione | Sostituzione del budget giornaliero con un monte settimanale | in attesa | `201770e460b3e66b` |
+| [VRB-2026-0008](VRB-2026-0008.md) | 2026-08-24 | decisione | Rigetto della luce libera di 4 mm del pattino anteriore | respinta | `d48f0c502f4f8f1c` |
