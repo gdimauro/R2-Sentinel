@@ -58,9 +58,10 @@ si calibri da sola.
 | Documentazione di un modulo congelato | 40–80k | `design-docs` |
 | Orchestrazione multi-agente su un problema aperto | 300k–1M+ | più agenti in parallelo |
 
-**Lettura pratica:** con un budget giornaliero da 1 M di token si comprano
-circa **8–15 sessioni di lavoro reale**, oppure **una singola indagine
-multi-agente** su un problema che non si riesce a chiudere altrimenti.
+**Budget deciso: 750.000 token/giorno** (23 agosto 2026). Comprano circa
+**6–12 sessioni di lavoro reale**, oppure **una singola indagine multi-agente**
+su un problema che non si riesce a chiudere altrimenti. Non si accumula: il
+valore sta nel *quando* si spende. Il consuntivo giornaliero è in `LEDGER.md`.
 
 ---
 
