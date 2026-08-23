@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plancia R2-Sentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --bg:#EAEEF2; --panel:#FBFCFD; --panel-2:#F3F6F8; --line:#D2DAE2; --line-soft:#E2E8EE;
+  --tx:#151C25; --tx-2:#4A5765; --tx-3:#78879A;
+  --a:#B8631A; --a-bg:#F7EADC; --a-line:#E4B98C;
+  --b:#4B57C4; --b-bg:#E7E9FA; --b-line:#AEB5EC;
+  --ok:#1F7A50; --ok-bg:#DFF0E7;
+  --stop:#B4302B; --stop-bg:#F8E3E1;
+  --idle:#8B99AA;
+  --shadow:0 1px 2px rgba(20,30,45,.06),0 6px 18px -10px rgba(20,30,45,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1319; --panel:#161D26; --panel-2:#1B232D; --line:#293341; --line-soft:#212A35;
+    --tx:#E6EBF1; --tx-2:#A3B0BF; --tx-3:#7A8797;
+    --a:#E39A4A; --a-bg:#2E2013; --a-line:#5C401F;
+    --b:#8E97EC; --b-bg:#1C1E3A; --b-line:#3A3F72;
+    --ok:#54B98A; --ok-bg:#12291E;
+    --stop:#E0706A; --stop-bg:#2E1614;
+    --idle:#6C7A8B;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1319; --panel:#161D26; --panel-2:#1B232D; --line:#293341; --line-soft:#212A35;
+  --tx:#E6EBF1; --tx-2:#A3B0BF; --tx-3:#7A8797;
+  --a:#E39A4A; --a-bg:#2E2013; --a-line:#5C401F;
+  --b:#8E97EC; --b-bg:#1C1E3A; --b-line:#3A3F72;
+  --ok:#54B98A; --ok-bg:#12291E;
+  --stop:#E0706A; --stop-bg:#2E1614;
+  --idle:#6C7A8B;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--tx);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:28px 22px 80px; display:flex; flex-direction:column; gap:26px}
+
+h1,h2,h3{font-family:"Saira Condensed","IBM Plex Sans",sans-serif; margin:0; text-wrap:balance; letter-spacing:.01em}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--tx-3);
+}
+
+/* ---------- barra di stato ---------- */
+.bridge{
+  background:var(--panel); border:1px solid var(--line); border-radius:3px;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.bridge-top{
+  display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px;
+  padding:20px 22px 16px; border-bottom:1px solid var(--line-soft);
+}
+.bridge-id{flex:1 1 300px; min-width:0}
+.bridge-id h1{font-size:38px; font-weight:700; line-height:1; letter-spacing:-.01em}
+.bridge-id p{margin:7px 0 0; color:var(--tx-2); font-size:13.5px; max-width:60ch}
+.stamp{display:flex; flex-direction:column; align-items:flex-end; gap:5px}
+.state{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 11px;
+  background:var(--a-bg); border:1px solid var(--a-line); border-radius:2px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--a);
+}
+.state::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--a)}
+.stamp .mono{font-size:11px; color:var(--tx-3)}
+
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+.kpi{padding:14px 22px; border-right:1px solid var(--line-soft)}
+.kpi:last-child{border-right:0}
+.kpi .n{font-family:"Saira Condensed",sans-serif; font-size:31px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+.kpi .n small{font-size:15px; color:var(--tx-3); font-weight:500}
+.kpi .l{margin-top:5px; font-size:11px; color:var(--tx-3); letter-spacing:.02em}
+.kpi.alert .n{color:var(--stop)}
+
+/* ---------- sezioni ---------- */
+section{display:flex; flex-direction:column; gap:13px}
+.sec-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.sec-head h2{font-size:19px; font-weight:600; letter-spacing:.02em; text-transform:uppercase}
+.sec-head .note{font-size:12.5px; color:var(--tx-3); margin-left:auto}
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:3px; box-shadow:var(--shadow)}
+
+/* ---------- due canali ---------- */
+.channels{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:16px}
+.ch{position:relative; padding:18px 20px 20px; overflow:hidden}
+.ch::before{content:""; position:absolute; inset:0 auto 0 0; width:3px}
+.ch.a::before{background:var(--a)} .ch.b::before{background:var(--b)}
+.ch h3{font-size:17px; font-weight:600; letter-spacing:.03em; text-transform:uppercase}
+.ch.a h3{color:var(--a)} .ch.b h3{color:var(--b)}
+.ch .sub{font-size:12.5px; color:var(--tx-2); margin:5px 0 14px; min-height:2.6em}
+.spec{display:grid; grid-template-columns:auto 1fr; gap:7px 14px; font-size:13px}
+.spec dt{color:var(--tx-3); font-size:11px; letter-spacing:.06em; text-transform:uppercase; font-family:"IBM Plex Mono",monospace; padding-top:2px}
+.spec dd{margin:0}
+.ch-foot{margin-top:15px; padding-top:12px; border-top:1px dashed var(--line); display:flex; gap:6px; flex-wrap:wrap}
+.pchip{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500;
+  padding:3px 7px; border-radius:2px; border:1px solid var(--line); color:var(--tx-3);
+}
+.ch.a .pchip{background:var(--a-bg); border-color:var(--a-line); color:var(--a)}
+.ch.b .pchip{background:var(--b-bg); border-color:var(--b-line); color:var(--b)}
+
+/* ---------- roadmap ---------- */
+.phases{display:flex; flex-direction:column}
+.ph{
+  display:grid; grid-template-columns:44px 1fr 190px 110px; gap:16px; align-items:start;
+  padding:13px 20px; border-bottom:1px solid var(--line-soft);
+}
+.ph:last-child{border-bottom:0}
+.ph-n{
+  font-family:"Saira Condensed",sans-serif; font-size:23px; font-weight:600; line-height:1.1;
+  color:var(--tx-3); font-variant-numeric:tabular-nums;
+}
+.ph-b{min-width:0}
+.ph-b strong{display:block; font-size:14.5px; font-weight:600}
+.ph-b span{display:block; font-size:12.5px; color:var(--tx-2); margin-top:3px}
+.ph-owner{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--tx-2); padding-top:3px}
+.ph-owner em{font-style:normal; color:var(--tx-3)}
+.ph-unit{
+  display:inline-block; width:5px; height:5px; border-radius:50%; margin-right:6px; vertical-align:middle;
+}
+.ph-unit.a{background:var(--a)} .ph-unit.b{background:var(--b)} .ph-unit.both{background:var(--idle)}
+.status{
+  display:inline-flex; align-items:center; gap:6px; font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; font-weight:500; letter-spacing:.06em; text-transform:uppercase;
+  padding:3px 8px; border-radius:2px; border:1px solid var(--line); color:var(--tx-3); white-space:nowrap;
+}
+.status::before{content:""; width:5px; height:5px; border-radius:50%; border:1.5px solid currentColor}
+.status.done{color:var(--ok); background:var(--ok-bg); border-color:var(--ok)}
+.status.done::before{background:currentColor}
+.status.next{color:var(--tx); border-color:var(--tx-2); border-style:solid}
+.status.next::before{background:currentColor}
+.status.block{color:var(--stop); background:var(--stop-bg); border-color:var(--stop)}
+
+/* ---------- squadra ---------- */
+.crew{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px}
+.agent{padding:16px 18px; display:flex; flex-direction:column; gap:10px; position:relative}
+.agent-top{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+.agent-top .nm{font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600}
+.tag{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+  padding:2px 6px; border-radius:2px; border:1px solid var(--line); color:var(--tx-3);
+}
+.tag.a{background:var(--a-bg); border-color:var(--a-line); color:var(--a)}
+.tag.b{background:var(--b-bg); border-color:var(--b-line); color:var(--b)}
+.tag.x{background:var(--panel-2)}
+.agent p{margin:0; font-size:13px; color:var(--tx-2)}
+.done-crit{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--tx);
+  background:var(--panel-2); border:1px solid var(--line-soft); border-left:2px solid var(--ok);
+  padding:8px 10px; border-radius:2px;
+}
+.done-crit b{display:block; font-family:"IBM Plex Sans",sans-serif; font-size:9.5px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--tx-3); margin-bottom:3px}
+
+/* ---------- tabelle ---------- */
+.scroll{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{
+  text-align:left; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--tx-3);
+  padding:11px 14px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+td{padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.id{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--tx-3); white-space:nowrap}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+td .why{display:block; color:var(--tx-2); font-size:12.5px; margin-top:3px}
+td .why code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; background:var(--panel-2); padding:1px 4px; border-radius:2px}
+tfoot td{border-top:1px solid var(--line); font-weight:600; border-bottom:0}
+
+/* ---------- bloccanti ---------- */
+.blockers{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0}
+.blk{padding:14px 18px; border-right:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft)}
+.blk strong{display:block; font-size:13.5px; font-weight:600; margin-bottom:3px}
+.blk span{font-size:12.5px; color:var(--tx-2)}
+.blk .gate{
+  display:inline-block; margin-top:7px; font-family:"IBM Plex Mono",monospace;
+  font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--stop);
+}
+.blk.owner-you{background:var(--stop-bg)}
+.blk.critical{background:var(--stop-bg); box-shadow:inset 3px 0 0 var(--stop)}
+.blk.critical strong{color:var(--stop)}
+.agent.pending{border-style:dashed; opacity:.72}
+.agent.pending .done-crit{border-left-color:var(--idle); color:var(--tx-3)}
+
+/* ---------- barra budget ---------- */
+.bars{display:flex; flex-direction:column; gap:9px; padding:16px 20px}
+.bar-row{display:grid; grid-template-columns:140px 1fr 70px; gap:12px; align-items:center; font-size:12.5px}
+.bar-track{height:8px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:2px; overflow:hidden}
+.bar-fill{height:100%; background:var(--tx-3)}
+.bar-row .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right; font-size:12.5px}
+
+
+/* ---------- contabilità ---------- */
+.money{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:0}
+.cur{padding:16px 20px; border-right:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft)}
+.cur .h{display:flex; align-items:baseline; gap:8px; margin-bottom:8px}
+.cur .h b{font-family:"Saira Condensed",sans-serif; font-size:15px; font-weight:600; letter-spacing:.04em; text-transform:uppercase}
+.cur .big{font-family:"Saira Condensed",sans-serif; font-size:27px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+.cur .sm{font-size:12px; color:var(--tx-2); margin-top:6px}
+.cur.warn{background:var(--stop-bg)} .cur.warn .big{color:var(--stop)}
+.gauge{height:9px; background:var(--panel-2); border:1px solid var(--line-soft); border-radius:2px; overflow:hidden; margin-top:10px; display:flex}
+.gauge i{display:block; height:100%}
+.gauge i.used{background:var(--tx-2)} .gauge i.deb{background:repeating-linear-gradient(45deg,var(--idle),var(--idle) 3px,transparent 3px,transparent 6px)}
+
+/* ---------- controlli libro giornale ---------- */
+.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:13px 16px; border-bottom:1px solid var(--line-soft)}
+.search{
+  flex:1 1 220px; min-width:0; padding:7px 11px; border:1px solid var(--line); border-radius:2px;
+  background:var(--panel-2); color:var(--tx); font-family:"IBM Plex Sans",sans-serif; font-size:13px;
+}
+.search:focus{outline:2px solid var(--tx-2); outline-offset:1px}
+.chips{display:flex; gap:5px; flex-wrap:wrap}
+.chip{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+  padding:5px 9px; border:1px solid var(--line); border-radius:2px; background:var(--panel-2);
+  color:var(--tx-3); cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--tx); color:var(--panel); border-color:var(--tx)}
+.chip:focus-visible{outline:2px solid var(--tx-2); outline-offset:1px}
+th.sortable{cursor:pointer; user-select:none; white-space:nowrap}
+th.sortable:hover{color:var(--tx)}
+th.sortable::after{content:"↕"; margin-left:5px; opacity:.35}
+th.sortable[data-dir="asc"]::after{content:"↑"; opacity:1}
+th.sortable[data-dir="desc"]::after{content:"↓"; opacity:1}
+.kind{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.07em; text-transform:uppercase;
+  padding:2px 6px; border-radius:2px; border:1px solid var(--line); color:var(--tx-3); white-space:nowrap;
+}
+.kind.token{background:var(--b-bg); border-color:var(--b-line); color:var(--b)}
+.kind.acquisto{background:var(--a-bg); border-color:var(--a-line); color:var(--a)}
+.kind.decisione{background:var(--panel-2)}
+.kind.giornale{background:var(--ok-bg); border-color:var(--ok); color:var(--ok)}
+.empty{padding:28px 16px; text-align:center; color:var(--tx-3); font-size:13px}
+.count{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--tx-3); margin-left:auto}
+
+footer{
+  border-top:1px solid var(--line); padding-top:16px; font-size:12px; color:var(--tx-3);
+  display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between;
+}
+footer a{color:var(--tx-2)}
+
+@media (max-width:720px){
+  .ph{grid-template-columns:32px 1fr; gap:10px}
+  .ph-owner,.ph .status{grid-column:2}
+  .bar-row{grid-template-columns:110px 1fr 62px}
+  .bridge-id h1{font-size:30px}
+  .stamp{align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <!-- =============== BARRA DI STATO =============== -->
+  <div class="bridge">
+    <div class="bridge-top">
+      <div class="bridge-id">
+        <div class="eyebrow">Sistema robotico di rilevamento e intervento — due unità</div>
+        <h1>R2-Sentinel</h1>
+        <p>Due macchine indipendenti: una fissa che dissuade i volatili sul balcone, una mobile che cattura le zanzare in casa. Nessun hardware assemblato: il progetto è in definizione di architettura.</p>
+      </div>
+      <div class="stamp">
+        <span class="state">Definizione architettura</span>
+        <span class="mono">PROJECT.md v0.5 · <span id="doc-date">23 ago 2026</span></span>
+        <span class="mono">main · ef9ef44</span>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="n">0<small>/9</small></div><div class="l">Fasi completate</div></div>
+      <div class="kpi"><div class="n">0<small>/8</small></div><div class="l">Moduli consegnati</div></div>
+      <div class="kpi"><div class="n" id="kpi-dec">15</div><div class="l">Decisioni registrate</div></div>
+      <div class="kpi alert"><div class="n">14</div><div class="l">Questioni aperte</div></div>
+      <div class="kpi"><div class="n" id="kpi-crew">—</div><div class="l">Agenti in squadra</div></div>
+      <div class="kpi"><div class="n">~2,9k<small>&nbsp;€</small></div><div class="l">Capitale previsto</div></div>
+      <div class="kpi"><div class="n">750<small>k/g</small></div><div class="l">Budget token</div></div>
+    </div>
+  </div>
+
+  <!-- =============== DUE CANALI =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Le due unità</h2>
+      <span class="note">Condividono stack software, toolchain CAD e approccio di detection. Dialogano via MQTT.</span>
+    </div>
+    <div class="channels">
+      <div class="card ch a">
+        <div class="eyebrow">Unità A</div>
+        <h3>Balcone</h3>
+        <p class="sub">Rileva il piccione che si posa e attiva un getto d'aria mirato. L'intervento è contingente, quindi non genera assuefazione — e non è lesivo, come impone la legge.</p>
+        <dl class="spec">
+          <dt>Forma</dt><dd>Fissa, testa pan-tilt 2 assi</dd>
+          <dt>Bersaglio</dt><dd>Volatili · ~30 cm</dd>
+          <dt>Percezione</dt><dd>Visione — YOLO11 su Hailo-8L</dd>
+          <dt>Payload</dt><dd>Getto d'aria 5 bar, non lesivo</dd>
+          <dt>Energia</dt><dd>Rete</dd>
+          <dt>Requisito</dt><dd class="mono">~1° a 5 m</dd>
+        </dl>
+        <div class="ch-foot">
+          <span class="pchip">F1 CAD</span><span class="pchip">F2 Pan-tilt</span><span class="pchip">F3 Visione</span><span class="pchip">F4 Integrazione</span>
+        </div>
+      </div>
+      <div class="card ch b">
+        <div class="eyebrow">Unità B</div>
+        <h3>Interno</h3>
+        <p class="sub">Non insegue: attira. Porta la trappola nella stanza occupata, dispiega l'esca, rileva il battito alare e aspira. La cattura è statica.</p>
+        <dl class="spec">
+          <dt>Forma</dt><dd>Mobile, differenziale + montante 120 cm</dd>
+          <dt>Bersaglio</dt><dd>Zanzare · ~3 mm</dd>
+          <dt>Percezione</dt><dd>Acustica — battito alare 400–600 Hz</dd>
+          <dt>Payload</dt><dd>Esca CO₂ + 35 °C + aspirazione</dd>
+          <dt>Energia</dt><dd>LiFePO4 4S 10 Ah + dock</dd>
+          <dt>Requisito</dt><dd class="mono">rientro autonomo</dd>
+        </dl>
+        <div class="ch-foot">
+          <span class="pchip">F5 Acustica</span><span class="pchip">F6 Trappola</span><span class="pchip">F7 Navigazione</span><span class="pchip">F8 Integrazione</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== ROADMAP =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Roadmap</h2>
+      <span class="note">Le fasi 1–4 e 5–8 sono parallelizzabili: sono due macchine indipendenti.</span>
+    </div>
+    <div class="card phases" id="phases"></div>
+  </section>
+
+  <!-- =============== SQUADRA =============== -->
+  <section id="crew-section">
+    <div class="sec-head">
+      <h2>Squadra</h2>
+      <span class="note">Definita dal Chief Engineer a partire dalla decomposizione del sistema.</span>
+    </div>
+    <div class="crew" id="crew"></div>
+  </section>
+
+  <!-- =============== BLOCCANTI =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Questioni aperte</h2>
+      <span class="note">Ciò che non è deciso blocca chi deve iniziare.</span>
+    </div>
+    <div class="card"><div class="blockers" id="blockers"></div></div>
+  </section>
+
+  <!-- =============== DECISION LOG =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Decision Log</h2>
+      <span class="note">Ogni scelta con il suo perché — è la parte che serve fra sei mesi.</span>
+    </div>
+    <div class="card scroll">
+      <table>
+        <thead><tr><th style="width:52px">ID</th><th>Decisione e motivazione</th><th style="width:96px">Data</th></tr></thead>
+        <tbody id="dlog"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- =============== CAPITALE =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Capitale</h2>
+      <span class="note">Capitale previsto ~2.700–3.100 €. Esclusa la event camera opzionale da 3.000 € e il service SLS, da quotare.</span>
+    </div>
+    <div class="card bars" id="bom"></div>
+  </section>
+
+
+  <!-- =============== CONTABILITÀ =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Contabilità</h2>
+      <span class="note">Tre valute che non si convertono l'una nell'altra. Il misurato è distinto dallo stimato.</span>
+    </div>
+    <div class="card"><div class="money">
+      <div class="cur">
+        <div class="h"><b>Token</b></div>
+        <div class="big">83.366<small style="font-size:14px;color:var(--tx-3)"> / 750.000</small></div>
+        <div class="gauge" role="img" aria-label="11% del budget giornaliero misurato, resto non rilevato">
+          <i class="used" style="width:11.1%"></i><i class="deb" style="width:18%"></i>
+        </div>
+        <div class="sm">Budget <b>750k/giorno</b>, non cumulabile. Misurato solo il Chief Engineer; due voci del giorno non rilevate — tratteggio.</div>
+      </div>
+      <div class="cur">
+        <div class="h"><b>Euro</b></div>
+        <div class="big">0<small style="font-size:14px;color:var(--tx-3)"> / ~2.900</small></div>
+        <div class="gauge"><i class="used" style="width:0%"></i></div>
+        <div class="sm">Capitale previsto <b>~2.700–3.100 €</b>: strumenti 400–625, stampante ~975, materiali 300–550, BOM ~993.</div>
+      </div>
+      <div class="cur warn">
+        <div class="h"><b>Calendario</b></div>
+        <div class="big">~5 sett.</div>
+        <div class="sm">Alla chiusura della finestra stagionale delle zanzare. Non si compra con nessuna delle altre due: se scade, la fase 5 slitta di un anno.</div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- =============== LIBRO GIORNALE =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Libro giornale</h2>
+      <span class="note">Movimenti, acquisti, decisioni e voci di diario in un unico registro.</span>
+    </div>
+    <div class="card">
+      <div class="controls">
+        <input class="search" id="q" type="search" placeholder="Cerca in tutto il registro…" aria-label="Cerca nel libro giornale">
+        <div class="chips" id="chips" role="group" aria-label="Filtra per tipo"></div>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr>
+            <th class="sortable" data-k="d" style="width:96px">Data</th>
+            <th style="width:88px">Tipo</th>
+            <th>Voce</th>
+            <th class="sortable" data-k="v" style="width:120px;text-align:right">Valore</th>
+            <th style="width:130px">Stato</th>
+          </tr></thead>
+          <tbody id="led"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="none" hidden>Nessuna voce corrisponde ai filtri.</div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Sorgente di verità: <span class="mono">docs/PROJECT.md</span> — questo sinottico ne è il riflesso, non il sostituto.</span>
+    <span class="mono">MIT · CERN-OHL-W v2 · CC BY-SA 4.0</span>
+  </footer>
+</div>
+
+<script>
+
+const CREW=[
+ {n:"mechatronics",u:"x",ul:"A + base B",e:"Fase 0",o:"CAD parametrico CadQuery, meccanica di precisione, elettronica di potenza, firmware ESP32-S3 e micro-ROS. Un ruolo solo, non tre: il grado di precisione non vive in nessuno dei tre mestieri, vive fra di essi.",f:"Errore di puntamento RMS ≤1,0° su 20 cicli a 5 m · backlash ≤0,3° · deriva ≤0,5° dopo 2 h a 50 °C · jitter loop ≤100 µs"},
+ {n:"vision-perception",u:"a",ul:"Unità A",e:"Fase 3",o:"Dataset piccioni, training ed export YOLO11 su Hailo-8L, e la calibrazione estrinseca camera→pan-tilt che traduce un pixel in un angolo.",f:"≥25 fps end-to-end a 640×640 · mAP@50 ≥0,85 su ≥300 immagini dal balcone reale · ≤1 falso positivo/ora su 8 h · latenza ≤150 ms p95"},
+ {n:"acoustic-perception",u:"b",ul:"Unità B",e:"Fase 1",o:"Firma spettrale del battito alare, FFT, classificatore — e il dataset notturno, che è vincolato dal calendario e per questo parte in fase 1, non in fase 5.",f:"≥20 notti utili da ≥6 h con metadati BME280, di cui ≥5 negative di controllo · recall ≥0,90 · ≤1 falso positivo/ora"},
+ {n:"autonomy",u:"b",ul:"Unità B",e:"Fase 7 · consultato in F1",o:"ROS 2 Jazzy, Nav2, slam_toolbox, fusione LIDAR/ToF/IMU, docking a contatti pogo. Entra in fase 1 solo per consegnare i vincoli di baricentro prima che il telaio si congeli.",f:"20/20 docking entro ±5 mm e ±3° · SLAM ≥60 m² con chiusura d'anello ≤10 cm · 0 collisioni e 0 cadute su 2 h"},
+ {n:"payload-fluidics",u:"x",ul:"A + B",e:"Fase 4 e 6",o:"Il payload fluidico di entrambe le unità: getto d'aria compressa su A, aspirazione ed esca su B. È la stessa fisica, e porta insieme i vincoli di sicurezza più pesanti del progetto.",f:"Aria 8–25 m/s a 5 m su griglia 5×5 · 0 particolato su 20 raffiche · aspirazione ≥2,0 m/s a 25 cm · esca 35 ±1 °C · efficacia ≥3:1 su ≥10 notti"},
+ {n:"compliance-safety",u:"x",ul:"Trasversale",e:"Sempre",o:"L.157/1992 e ordinanze, sicurezza elettrica e BMS, apparecchi in pressione, privacy. Verifica e non costruisce: è l'unico senza Write né Bash, e ha potere di veto sulle prove in pressione.",f:"0 voci «da verificare» aperte ai gate fase 4 e fase 6 · 100% componenti in pressione, batteria e BMS con certificato registrato"},
+ {n:"software-platform",u:"x",ul:"Trasversale",e:"Fase 0 · bloccante F1",o:"La base software che tutti consumano e nessuno costruiva: workspace ROS 2, riproducibilità dell'ambiente, CI, harness con cui ogni agente esegue il proprio criterio di FATTO, Git LFS, e l'integrazione MQTT → Home Assistant.",f:"Git LFS operativo prima di ogni export CAD · da git clone a workspace compilato in ≤30 min con un solo comando, provato 2 volte su ambiente vergine · CI che rifiuta pesi, dataset e STEP fuori LFS, 4/4 controlli provati · un comando per ogni criterio di FATTO altrui, copertura 6/6"},
+ {n:"design-docs",u:"x",ul:"Trasversale",e:"A modulo congelato",o:"La documentazione come deliverable funzionale: schemi di cablaggio, sequenze di assemblaggio, schede pezzo, diagrammi, presentazione pubblica. In open hardware è ciò che separa un progetto replicabile da uno soltanto pubblicato.",f:"Il test del terzo: una persona che non ha mai visto il progetto assembla il modulo con la sola documentazione, ≤2 h, 0 domande, 0 pezzi danneggiati, su ≥2 tentativi indipendenti · ogni domanda posta è un difetto da correggere · 100% dei collegamenti a schema, 0 fili omessi perché «ovvi»"}
+];
+const PHASES=[
+ {n:0,t:"Setup",d:"Stampante operativa, profili materiali tarati",dl:"Provini PLA/PETG/ASA + test interfaccia PETG-sotto-ASA (D-11)",u:"both",s:"next"},
+ {n:1,t:"CAD testa pan-tilt",d:"Primo modulo parametrico",dl:"CadQuery + STEP/STL, variante FDM e SLS",u:"a",s:""},
+ {n:2,t:"Pan-tilt fisico",d:"Testa montata e mossa da ESP32",dl:"Precisione angolare misurata, target ~1°",u:"a",s:""},
+ {n:3,t:"Visione base",d:"Detection piccioni su video",dl:"YOLO11 su Hailo, fps e accuratezza misurate",u:"a",s:""},
+ {n:4,t:"Integrazione Unità A",d:"Rilevamento → mira → getto",dl:"Prototipo funzionante da balcone",u:"a",s:""},
+ {n:5,t:"Rilevamento acustico",d:"Firma zanzara classificata",dl:"FFT + classificatore, tasso di falsi positivi",u:"b",s:""},
+ {n:6,t:"Trappola",d:"Cattura statica con esca",dl:"Efficacia misurata su n notti",u:"b",s:""},
+ {n:7,t:"Base mobile",d:"Navigazione + docking",dl:"Nav2 + rientro autonomo",u:"b",s:""},
+ {n:8,t:"Integrazione Unità B",d:"Sistema completo interno",dl:"—",u:"b",s:""}
+];
+const DLOG=[
+ ["D-01","Architettura a <b>due unità separate</b> anziché un singolo robot","I due bersagli hanno requisiti incompatibili: il piccione richiede portata e mira all'aperto, la zanzara prossimità ed esca in interno. Un'unica macchina farebbe male entrambe le cose."],
+ ["D-02","Unità balcone <b>fissa</b> (pan-tilt), non mobile","La mobilità all'aperto aggiunge tenuta stagna, vento e dislivelli senza beneficio: il bersaglio si posa in punti prevedibili."],
+ ["D-03","Zanzare: <b>attrazione, non inseguimento</b>","Volo erratico a 1–1,5 m/s, spesso a 2 m di quota. Un robot su ruote non intercetta. L'esca porta il bersaglio entro 20–30 cm, dove l'aspirazione funziona."],
+ ["D-04","Rilevamento zanzare <b>acustico</b> come sensore primario","Il battito alare è una firma robusta rilevabile con un microfono MEMS da ~5 €. Otticamente servirebbe risoluzione &lt;1 mm/pixel: centinaia o migliaia di euro."],
+ ["D-05","Camera <b>global shutter</b> per bersagli in volo","Con rolling shutter un soggetto rapido esce deformato: il bounding box è instabile e la mira ne risente direttamente."],
+ ["D-06","Pan-tilt con <b>stepper + riduzione a cinghia</b>, non servo hobby","Per colpire a 5 m serve ~1°. I servo hobby hanno gioco e deriva termica insufficienti; gli stepper ridotti 5:1 hanno margine abbondante."],
+ ["D-07","Batteria <b>LiFePO4</b> anziché Li-ion NMC","Il robot naviga incustodito in casa e si ricarica da solo. LiFePO4 non va in thermal runaway: è la scelta corretta per un dispositivo autonomo non sorvegliato."],
+ ["D-08","Stampante: <b>Bambu Lab P2S Combo</b>","Raccomandazione iniziale P1S, rivista al rialzo: l'AMS 2 Pro è un essiccatore attivo e abilita i supporti multi-materiale (D-11). Il multicolore resta irrilevante."],
+ ["D-09","CAD <b>parametrico (CadQuery)</b>, export STEP + STL","Lo stesso file genera la variante FDM e la SLS cambiando una tolleranza. Evita due modelli divergenti."],
+ ["D-10","Il <b>90% dei pezzi resta FDM in casa</b>","Il service ha senso solo dove l'FDM fallisce fisicamente. Un guscio grande costa 3–4 € in ASA contro 150–250 € in SLS, senza vantaggio funzionale."],
+ ["D-11","<b>Interfacce di supporto in materiale diverso</b> (PETG sotto ASA)","Si staccano da sole lasciando superficie pulita: rende stampabili in casa geometrie con sottosquadri prima destinate al service. Costo: purge waste a ogni cambio."],
+ ["D-12","Nome del progetto: <b>R2-Sentinel</b>","«Sentinel» descrive il comportamento reale di entrambe le unità — sorvegliano e intervengono su un evento — senza promettere l'eliminazione del bersaglio, che per i volatili sarebbe legalmente scorretto."]
+,
+ ["D-13","Squadra di <b>sei agenti specialisti</b>, più il chief-engineer che li coordina","Derivata dalla decomposizione del sistema, non dalle discipline. CAD, elettronica e firmware stanno in un ruolo solo perché il requisito di ~1° non vive in nessuno dei tre mestieri ma fra di essi; l'organizzazione è per macchina e non per disciplina; <code>acoustic-perception</code> entra in fase 1 e non in fase 5 perché il suo lavoro è vincolato dal calendario — è l'unica decisione di sequenza che sposta la data di consegna."],
+ ["D-14","Il <b>payload fluidico di entrambe le unità</b> è di un ruolo unico trasversale, non diviso fra i due equipaggi","È la stessa fisica — getto libero, flusso di cattura e pennacchio dell'esca sono lo stesso mestiere, e diviso in due verrebbe imparato due volte e male. Concentra i rischi più seri (5 bar, CO₂, resistenza accesa di notte): duplicare la competenza sugli apparecchi in pressione significa diluirla. E il numero che governa l'Unità A è fluidodinamico, non meccanico. <b>Costo accettato:</b> è l'unico specialista che attraversa entrambe le unità, quindi un potenziale collo di bottiglia fra le catene parallele."]
+,
+ ["D-15","Squadra estesa a <b>otto agenti</b> con <code>software-platform</code> e <code>design-docs</code> — richiesti come «un CTO» e «un grafico», rifiutati in quella forma e non nella sostanza","Un CTO si sarebbe sovrapposto quasi interamente al chief-engineer, che già possiede architettura, confini, misura e Decision Log: due proprietari della stessa cosa significa nessun proprietario. La parte che non si sovrappone — strategia, budget, buy-vs-build — è dello <b>sponsor</b>, non di un agente. Il «grafico» avrebbe trasformato in decorazione un deliverable che in open hardware è funzionale: è la documentazione a decidere se il progetto è replicabile o soltanto pubblicato."]
+];
+const BLOCK=[
+ ["Finestra stagionale del dataset zanzare","In Italia le zanzare sono attive da maggio a settembre/ottobre. Oggi è il 23 agosto: se la raccolta non parte entro poche settimane, la fase 5 slitta di <b>un anno intero</b>, non di qualche settimana.","Slittamento 1 anno",2],
+ ["Strumenti di misura non in BOM","Reticolo a 5 m, anemometro, analizzatore logico, riferimento acustico. Senza, nessun criterio di FATTO è verificabile e nessun gate chiude.","Blocca tutti i gate",1],
+ ["Unità A: getto d'aria, nebulizzazione, o entrambi","Definisce il payload e i vincoli sugli apparecchi in pressione.","Blocca F4",1],
+ ["Unità A: rete o autonoma","La rete è molto più semplice se c'è una presa esterna.","Blocca F1",1],
+ ["Autonomia target dell'Unità B","Determina la batteria e quindi la massa del telaio.","Blocca F7",1],
+ ["Budget complessivo target","Condiziona l'event camera e il ricorso al service SLS.","Sponsor",1],
+ ["Da quale modulo CAD partire","Testa pan-tilt (raccomandato) o telaio base mobile.","Blocca F1",1],
+ ["Soglia di dissuasione efficace del getto","L'intervallo 8–25 m/s è una stima di primo tentativo: la letteratura non dà un valore non lesivo confermato.","Stima, non dato",0],
+ ["Autocontaminazione acustica dell'Unità B","La ventola da 80 mm sta a pochi cm dal microfono e può coprire i 400–600 Hz. Se sì, serve ciclo alternato ascolto/aspirazione.","Misurare prima di F6",0],
+ ["Esca CO₂: cartuccia o fermentazione","Comoda e ricorrente contro gratuita e manutentiva.","Blocca F6",0],
+ ["Regolamento comunale sui dissuasori","Può essere più restrittivo della norma nazionale.","Chiude F4",0],
+ ["Svuotamento della camera di raccolta","Nessuna soluzione ancora ipotizzata.","Blocca F6",0],
+ ["Strategia di raccolta dataset zanzare","Subordinata alla finestra stagionale qui sopra.","Blocca F5",0]
+];
+const BOM=[["Stampante+accessori",975],["BOM: attuazione",310],["Strumenti di misura",513],["Materiali (progetto)",375],["BOM: sensori",198],["BOM: calcolo",190],["BOM: alimentazione",155],["BOM: visione",140]];
+
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+
+$("#phases").innerHTML=PHASES.map(p=>{
+  const st=p.s==="next"?'<span class="status next">Prossima</span>':'<span class="status">Da fare</span>';
+  return `<div class="ph">
+    <div class="ph-n mono">${p.n}</div>
+    <div class="ph-b"><strong>${p.t}</strong><span>${p.dl}</span></div>
+    <div class="ph-owner"><span class="ph-unit ${p.u}"></span>${p.u==="a"?"Unità A":p.u==="b"?"Unità B":"Entrambe"}<em> · ${p.d}</em></div>
+    <div>${st}</div></div>`;
+}).join("");
+
+$("#dlog").innerHTML=DLOG.map(([id,t,w])=>
+ `<tr><td class="id">${id}</td><td>${t}<span class="why">${w}</span></td><td class="num">23·08·26</td></tr>`).join("");
+
+$("#blockers").innerHTML=BLOCK.map(([t,d,g,hot])=>
+ `<div class="blk${hot===2?" critical":hot?" owner-you":""}"><strong>${t}</strong><span>${d}</span><span class="gate">${g}</span></div>`).join("");
+
+
+$("#crew").innerHTML=CREW.map(c=>
+ `<div class="card agent${c.pend?" pending":""}">
+    <div class="agent-top"><span class="nm">${c.n}</span><span class="tag ${c.u}">${c.ul}</span><span class="tag x">${c.e}</span></div>
+    <p>${c.o}</p>
+    <div class="done-crit"><b>Criterio di fatto</b>${c.f}</div>
+  </div>`).join("");
+$("#kpi-crew").textContent=CREW.length+1;
+
+const tot=BOM.reduce((a,[,v])=>a+v,0), mx=Math.max(...BOM.map(b=>b[1]));
+$("#bom").innerHTML=BOM.map(([k,v])=>
+ `<div class="bar-row"><span>${k}</span><span class="bar-track"><span class="bar-fill" style="width:${(v/mx*100).toFixed(1)}%"></span></span><span class="num">${v} €</span></div>`
+).join("")+
+ `<div class="bar-row" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--line)"><span><b>Capitale previsto</b></span><span></span><span class="num"><b>~${tot} €</b></span></div>`;
+
+/* ============ LIBRO GIORNALE ============ */
+const LED=[
+ {d:"2026-08-23",k:"token",t:"<b>chief-engineer</b> — costruzione della squadra: 6 agenti, D-13, D-14, quattro questioni in §10",v:83366,vt:"83.366 tk",st:"Misurato"},
+ {d:"2026-08-23",k:"token",t:"<b>chief-engineer</b> — addendum: software-platform, design-docs, D-15",v:null,vt:"non rilevato",st:"Debito"},
+ {d:"2026-08-23",k:"token",t:"Sessione principale — igiene repo, primo commit, squadra, sinottico, giornale, piano economico",v:null,vt:"non rilevato",st:"Debito"},
+ {d:"2026-08-23",k:"token",t:"Budget giornaliero fissato a 750.000 token, non cumulabile",v:750000,vt:"750.000 tk/g",st:"Attivo"},
+ {d:"2026-08-23",k:"acquisto",t:"<b>S-03</b> Microfono di misura calibrato USB (classe UMIK-1) — riferimento 400–600 Hz <i>e</i> banco di registrazione immediato",v:140,vt:"120–160 €",st:"Ordinare per primo"},
+ {d:"2026-08-23",k:"acquisto",t:"<b>S-01</b> Anemometro a filo caldo 0–30 m/s con datalog CSV — mai vicino all'ugello, a 5 bar il convergente va in flusso critico",v:325,vt:"250–400 €",st:"Serve al gate F4"},
+ {d:"2026-08-23",k:"acquisto",t:"<b>S-02</b> Analizzatore logico USB 8 canali 24 MHz — jitter del loop ≤100 µs",v:18,vt:"10–25 €",st:"Serve al gate F2"},
+ {d:"2026-08-23",k:"acquisto",t:"<b>S-04</b> Laser + treppiede + bersaglio stampato — riferimento angolare a 5 m, si costruisce",v:30,vt:"20–40 €",st:"Da costruire"},
+ {d:"2026-08-23",k:"acquisto",t:"<b>S-05</b> Bambu Lab P2S Combo + alimentatore AMS + ugello 0,6 + piatti",v:975,vt:"~975 €",st:"In acquisto"},
+ {d:"2026-08-23",k:"acquisto",t:"Materiali set di partenza — PLA, PETG ×2, ASA, TPU 95A (5 kg)",v:155,vt:"~155 €",st:"Fase 0"},
+ {d:"2026-08-23",k:"acquisto",t:"Materiali caricati — PETG-CF e PA-CF per staffe sotto carico",v:130,vt:"~130 €",st:"Fase 2"},
+ {d:"2026-08-23",k:"acquisto",t:"Consumo filamento sull'intero progetto, 8–15 kg, purge waste D-11 incluso (+20–40%)",v:375,vt:"250–500 €",st:"Ricorrente"},
+ {d:"2026-08-23",k:"acquisto",t:"BOM elettronica e meccanica (§5) — non ordinare prima della fase 1",v:993,vt:"~993 €",st:"Fase 1"},
+ {d:"2026-08-23",k:"decisione",t:"<b>D-12</b> Nome del progetto: R2-Sentinel",v:null,vt:"—",st:"Registrata"},
+ {d:"2026-08-23",k:"decisione",t:"<b>D-13</b> Squadra per confini di sistema, non per discipline",v:null,vt:"—",st:"Registrata"},
+ {d:"2026-08-23",k:"decisione",t:"<b>D-14</b> Payload fluidico come ruolo unico trasversale alle due unità",v:null,vt:"—",st:"Registrata"},
+ {d:"2026-08-23",k:"decisione",t:"<b>D-15</b> software-platform e design-docs invece di «un CTO» e «un grafico»",v:null,vt:"—",st:"Registrata"},
+ {d:"2026-08-23",k:"giornale",t:"<b>Giorno zero</b> — da uno scheletro di cartelle a una squadra di otto. Include i due errori della giornata",v:null,vt:"—",st:"Scritta"}
+];
+const KINDS=["token","acquisto","decisione","giornale"];
+let active=new Set(KINDS), sortK="d", sortD="desc";
+
+const chips=document.getElementById("chips");
+chips.innerHTML=KINDS.map(k=>`<button class="chip" data-k="${k}" aria-pressed="true">${k}</button>`).join("");
+
+function draw(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  let rows=LED.filter(r=>active.has(r.k));
+  if(q) rows=rows.filter(r=>(r.t+" "+r.st+" "+r.d+" "+r.vt).replace(/<[^>]+>/g,"").toLowerCase().includes(q));
+  rows=rows.slice().sort((a,b)=>{
+    let x,y;
+    if(sortK==="v"){ x=a.v??-1; y=b.v??-1; }
+    else { x=a.d; y=b.d; }
+    const c = x<y?-1 : x>y?1 : 0;
+    return sortD==="asc"?c:-c;
+  });
+  document.getElementById("led").innerHTML=rows.map(r=>
+    `<tr><td class="mono" style="white-space:nowrap;color:var(--tx-3)">${r.d}</td>
+     <td><span class="kind ${r.k}">${r.k}</span></td>
+     <td>${r.t}</td>
+     <td class="num">${r.vt}</td>
+     <td style="font-size:12px;color:var(--tx-2)">${r.st}</td></tr>`).join("");
+  document.getElementById("none").hidden = rows.length>0;
+  document.getElementById("count").textContent = `${rows.length} di ${LED.length}`;
+}
+document.getElementById("q").addEventListener("input",draw);
+chips.addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  const k=b.dataset.k;
+  if(active.has(k)&&active.size>1){active.delete(k);b.setAttribute("aria-pressed","false");}
+  else {active.add(k);b.setAttribute("aria-pressed","true");}
+  draw();
+});
+document.querySelectorAll("th.sortable").forEach(th=>{
+  th.setAttribute("tabindex","0");
+  const go=()=>{
+    const k=th.dataset.k;
+    sortD = (sortK===k && sortD==="desc") ? "asc" : "desc";
+    sortK = k;
+    document.querySelectorAll("th.sortable").forEach(o=>o.removeAttribute("data-dir"));
+    th.setAttribute("data-dir",sortD);
+    draw();
+  };
+  th.addEventListener("click",go);
+  th.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+});
+document.querySelector('th.sortable[data-k="d"]').setAttribute("data-dir","desc");
+draw();
+
+</script>
+
+</body>
+</html>
