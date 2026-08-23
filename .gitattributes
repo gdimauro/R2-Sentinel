@@ -1,11 +1,37 @@
-# Git LFS — output CAD binari o voluminosi (vedi cad/export/)
+# =============================================================================
+# Git LFS — artefatti CAD generati (cad/export/) e binari voluminosi
+# -----------------------------------------------------------------------------
+# I pattern sono volutamente GLOBALI e non limitati a cad/export/: un export
+# salvato per sbaglio fuori da quella directory deve finire in LFS lo stesso,
+# perche' dalla history di Git un binario non si toglie davvero.
+# Git tratta i pattern in modo case-sensitive: le varianti maiuscole servono.
+# Prerequisito: `git lfs install` eseguito (vedi scripts/bootstrap.sh).
+# Se git-lfs NON e' installato questi filtri sono inerti e il file entra in
+# history come binario grezzo -> il pre-commit hook (scripts/git-hooks/) e la
+# CI (scripts/ci/check_hygiene.py) bloccano il commit in quel caso.
+# =============================================================================
 *.step  filter=lfs diff=lfs merge=lfs -text
+*.STEP  filter=lfs diff=lfs merge=lfs -text
 *.stp   filter=lfs diff=lfs merge=lfs -text
+*.STP   filter=lfs diff=lfs merge=lfs -text
 *.stl   filter=lfs diff=lfs merge=lfs -text
+*.STL   filter=lfs diff=lfs merge=lfs -text
 *.3mf   filter=lfs diff=lfs merge=lfs -text
+*.3MF   filter=lfs diff=lfs merge=lfs -text
 *.f3d   filter=lfs diff=lfs merge=lfs -text
+*.F3D   filter=lfs diff=lfs merge=lfs -text
+*.iges  filter=lfs diff=lfs merge=lfs -text
+*.igs   filter=lfs diff=lfs merge=lfs -text
+*.gcode filter=lfs diff=lfs merge=lfs -text
+*.3mf.zip filter=lfs diff=lfs merge=lfs -text
 
 # I sorgenti CadQuery restano testo diffabile: non passano da LFS.
+
+# -----------------------------------------------------------------------------
+# NON aggiungere qui pesi di modelli (*.pt, *.onnx, *.hef) ne' dataset:
+# quelli stanno FUORI dal repository (.gitignore + models/MANIFEST.yaml).
+# LFS non e' un posto dove mettere cose che non devono essere versionate.
+# -----------------------------------------------------------------------------
 
 # Normalizzazione fine riga
 *.md    text
@@ -18,3 +44,14 @@
 *.h     text
 *.cpp   text
 *.hpp   text
+*.sh    text eol=lf
+*.bash  text eol=lf
+
+# Script eseguibili: mai CRLF, altrimenti non partono su Ubuntu
+scripts/**       text eol=lf
+.github/**       text eol=lf
+
+# Marcature per diff piu' leggibili
+*.svg   text
+*.xacro text
+*.urdf  text

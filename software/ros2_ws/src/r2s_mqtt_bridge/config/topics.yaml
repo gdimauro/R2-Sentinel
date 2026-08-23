@@ -1,0 +1,149 @@
+# =============================================================================
+# SCHEMA DEI TOPIC MQTT — R2-Sentinel  (PROJECT.md §6: MQTT -> Home Assistant)
+# -----------------------------------------------------------------------------
+# Questo file e' la SORGENTE UNICA. Non descrivere i topic altrove:
+#   docs/interfaces/MQTT.md e' GENERATO da qui (`make mqtt-docs`);
+#   il lint dei topic (`scripts/ci/check_mqtt_topics.py`) fallisce se il codice
+#   usa un topic che non compare qui -> criterio "0 topic non documentati".
+# Chi aggiunge un topic modifica questo file, non il codice e basta.
+# =============================================================================
+
+version: 1
+schema_version: 1          # va nel campo `schema_version` di ogni payload JSON
+
+conventions:
+  prefix: "r2sentinel"
+  pattern: "r2sentinel/{site_id}/{unit_id}/{group}[/{name}]"
+  units: ["unit_a", "unit_b"]          # §4.2 balcone fisso, §4.3 interno mobile
+  encoding: "UTF-8 JSON, chiavi snake_case"
+  mandatory_payload_fields:
+    schema_version: "int, uguale a schema_version di questo file"
+    ts: "string ISO-8601 UTC con suffisso Z, orologio del dispositivo"
+    unit: "string, uno di units"
+    seq: "int monotono crescente per topic, riparte da 0 al riavvio"
+  forbidden_payload_content:
+    - "audio grezzo o suoi campioni (PRIVACY: audio di interni)"
+    - "immagini o crop di interni (PRIVACY)"
+    - "mappe SLAM o coordinate assolute della planimetria (PRIVACY)"
+    - "credenziali di qualsiasi tipo"
+  time_budget:
+    status_max_latency_s: 2.0          # criterio di FATTO software-platform
+    reconnect_max_s: 30.0
+
+broker:
+  default_host: "127.0.0.1"
+  default_port: 1883
+  tls_port: 8883
+  # Le credenziali NON stanno nel repository: variabili d'ambiente
+  # R2S_MQTT_USER / R2S_MQTT_PASS, oppure file fuori dal worktree.
+  credentials_env: ["R2S_MQTT_USER", "R2S_MQTT_PASS"]
+  keepalive_s: 15
+  # Comportamento in caduta del broker — definito una volta, qui.
+  disconnect_behaviour:
+    last_will:
+      topic: "r2sentinel/{site_id}/{unit_id}/availability"
+      payload: "offline"
+      retain: true
+      qos: 1
+    reconnect_backoff_s: [1, 2, 4, 8, 16, 30]   # cap a 30 s: e' il criterio
+    reconnect_jitter_s: 0.5
+    queue:
+      events_max: 100        # ring buffer in RAM, i piu' vecchi si perdono
+      persist_to_disk: false # un evento vecchio non serve a nessuno
+      commands_queued: false # un comando in ritardo e' pericoloso: si scarta
+      command_max_age_s: 5.0
+    on_reconnect: "ripubblica availability=online e status retained, poi svuota la coda eventi"
+
+topics:
+  - topic: "r2sentinel/{site_id}/{unit_id}/availability"
+    direction: publish
+    qos: 1
+    retain: true
+    ros_source: "-- (gestito dal client MQTT: LWT + publish a connessione)"
+    payload: "stringa: online | offline"
+    rate: "a ogni cambio di stato di connessione"
+    purpose: "Home Assistant marca l'entita' non disponibile senza inventare valori."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/status"
+    direction: publish
+    qos: 1
+    retain: true
+    ros_source: "r2s_interfaces/msg/UnitStatus su /r2s/status"
+    payload: >-
+      {schema_version, ts, unit, seq, state, state_name, detail,
+       battery_v, battery_soc, events_last_hour}
+    rate: "a ogni cambio di stato, e comunque ogni 5 s (heartbeat)"
+    purpose: "Stato sintetico dell'unita'. E' il topic su cui si misura la latenza <=2 s."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/event/detection"
+    direction: publish
+    qos: 1
+    retain: false
+    ros_source: "r2s_interfaces/msg/DetectionEvent su /r2s/detection"
+    payload: >-
+      {schema_version, ts, unit, seq, label, confidence,
+       bearing_pan_deg, bearing_tilt_deg, range_m}
+    rate: "a evento, throttling a 5 Hz"
+    purpose: "Rilevamento piccione. NIENTE immagini nel payload."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/event/acoustic"
+    direction: publish
+    qos: 1
+    retain: false
+    ros_source: "r2s_interfaces/msg/AcousticEvent su /r2s/acoustic"
+    payload: >-
+      {schema_version, ts, unit, seq, label, confidence,
+       fundamental_hz, harmonics_hz, snr_db, fan_overlap_db}
+    rate: "a evento, throttling a 2 Hz"
+    purpose: "Firma zanzara classificata. NIENTE audio nel payload."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/payload/state"
+    direction: publish
+    qos: 1
+    retain: true
+    ros_source: "r2s_interfaces/srv/TriggerPayload (esito) + stato interno"
+    payload: >-
+      {schema_version, ts, unit, seq, payload_kind, active, last_trigger_ts,
+       duration_s, reason, inhibited, inhibit_reason}
+    rate: "a ogni attivazione o inibizione"
+    purpose: "Tracciabilita' delle attivazioni del payload. `inhibited` e' la traccia
+      dell'interblocco di sicurezza: se e' true il payload non parte, e si sa perche'."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/telemetry/battery"
+    direction: publish
+    qos: 0
+    retain: true
+    ros_source: "sensor_msgs/msg/BatteryState su /r2s/battery"
+    payload: "{schema_version, ts, unit, seq, voltage_v, current_a, soc, temperature_c, chemistry}"
+    rate: "0,2 Hz"
+    purpose: "Batteria LiFePO4 (D-07). `chemistry` e' pubblicato ed e' atteso `LiFePO4`:
+      un valore diverso e' un difetto di configurazione da segnalare, non da ignorare."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/cmd/arm"
+    direction: subscribe
+    qos: 1
+    retain: false
+    ros_source: "-> std_srvs/srv/SetBool interno"
+    payload: "{schema_version, ts, armed: bool, requested_by: string}"
+    rate: "su comando dell'utente"
+    purpose: "Arma/disarma l'unita' da Home Assistant. I comandi piu' vecchi di
+      command_max_age_s vengono scartati e loggati, mai eseguiti in ritardo."
+
+  - topic: "r2sentinel/{site_id}/{unit_id}/cmd/payload"
+    direction: subscribe
+    qos: 1
+    retain: false
+    ros_source: "-> r2s_interfaces/srv/TriggerPayload"
+    payload: "{schema_version, ts, payload_kind, duration_s, reason, requested_by}"
+    rate: "su comando dell'utente"
+    purpose: "Attivazione manuale del payload. `duration_s` e' OBBLIGATORIO e limitato:
+      non esiste un comando di accensione senza durata (SAFETY.md)."
+
+  - topic: "homeassistant/{component}/r2s_{unit_id}_{object_id}/config"
+    direction: publish
+    qos: 1
+    retain: true
+    ros_source: "-- (generato dal bridge all'avvio)"
+    payload: "discovery Home Assistant, vedi https://www.home-assistant.io/integrations/mqtt/#mqtt-discovery"
+    rate: "una volta all'avvio e a ogni riconnessione"
+    purpose: "Auto-configurazione delle entita' in Home Assistant senza YAML a mano."

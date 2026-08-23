@@ -58,6 +58,17 @@ si calibri da sola.
 | Documentazione di un modulo congelato | 40–80k | `design-docs` |
 | Orchestrazione multi-agente su un problema aperto | 300k–1M+ | più agenti in parallelo |
 
+**Piano: Claude Max 20× (200 $/mese).** Cambia la natura della prima valuta:
+su abbonamento **i token non si pagano a consumo, si pagano in tetto di
+frequenza**. Non esiste un costo marginale per token — esiste una finestra
+mobile di 5 ore e un tetto settimanale condivisi con la chat. Il budget
+giornaliero non è quindi una spesa, è **una quota di capienza**: spenderlo tutto
+non costa di più, ma esaurire la finestra blocca il lavoro fino al reset.
+
+Conseguenza pratica: l'unico spreco reale è il lavoro **da rifare**, perché
+consuma capienza senza produrre nulla. Un mandato vago costa più di una
+sessione lunga.
+
 **Budget deciso: 750.000 token/giorno** (23 agosto 2026). Comprano circa
 **6–12 sessioni di lavoro reale**, oppure **una singola indagine multi-agente**
 su un problema che non si riesce a chiudere altrimenti. Non si accumula: il

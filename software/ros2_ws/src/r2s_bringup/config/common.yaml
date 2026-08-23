@@ -1,0 +1,8 @@
+# Parametri comuni alle due unita'. Segnaposto: i valori reali arrivano dagli
+# specialisti. Qui vive solo cio' che e' condiviso, per non farlo divergere.
+/**:
+  ros__parameters:
+    use_sim_time: false
+    # Identita' dell'unita': entra nel topic MQTT (docs/interfaces/MQTT.md)
+    unit_id: "unit_a"
+    site_id: "casa"

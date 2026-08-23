@@ -1,0 +1,17 @@
+# Attivazione del payload (getto d'aria Unita' A, aspirazione Unita' B).
+# VINCOLI NON NEGOZIABILI (PROJECT.md §2.1, §2.2, SAFETY.md):
+#  - dissuasione NON cruenta: il getto trasporta solo aria
+#  - nessun sistema laser
+# Il servizio esiste per rendere l'attivazione tracciabile e limitata nel tempo:
+# non esiste un comando "on" senza durata.
+uint8 PAYLOAD_AIR_JET=0
+uint8 PAYLOAD_SUCTION=1
+uint8 PAYLOAD_LURE=2
+uint8 payload
+
+float32 duration_s        # obbligatorio, >0 e <= limite di sicurezza del nodo
+string  reason            # id evento che ha motivato l'attivazione, per audit
+---
+bool    accepted
+string  message           # se accepted=false, il motivo del rifiuto
+float32 actual_duration_s

@@ -1,0 +1,5 @@
+# Parametri di r2s_mqtt_bridge — segnaposto di piattaforma.
+# I valori reali sono responsabilita' dell'owner dichiarato in package.xml.
+/**:
+  ros__parameters:
+    enabled: false

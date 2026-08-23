@@ -4,6 +4,44 @@ Questo documento non è una formalità. Definisce i confini del progetto e le
 ragioni per cui certe soluzioni tecniche sono state **escluse deliberatamente**.
 Chi forka questo repository è pregato di leggerlo prima di modificare il payload.
 
+Questo file **è il dossier di conformità** del progetto. Insieme a
+`hardware/bom/README.md` (registro dei certificati) contiene tutto ciò che va
+verificato prima di una prova rischiosa o di un'installazione. Non esiste un
+documento di conformità separato, per scelta: la conformità che vive in un file
+a parte non viene letta.
+
+## 0. Che cosa è e che cosa non è questo dossier
+
+**Non è** un fascicolo tecnico per la marcatura CE. R2-Sentinel è un progetto
+amatoriale, non commerciale, non immesso sul mercato. La domanda a cui questo
+documento risponde è diversa e più concreta: **che cosa è lecito costruire e
+installare a casa propria, e che cosa va verificato prima di ogni prova
+rischiosa.**
+
+**Notazione usata in tutto il documento.** Ogni affermazione è marcata:
+
+| Marca | Significato |
+|---|---|
+| **[V]** | **Verificato** su fonte primaria o su fonte secondaria qualificata, con il riferimento citato in §10 |
+| **[I]** | **Interpretazione** del maintainer sulla base delle fonti verificate. Ragionevole, non autorevole. Non è un parere legale |
+| **[?]** | **Non confermato.** È una voce aperta del registro §9, non un'assenza di problema |
+
+Le voci **[?]** hanno tutte un identificativo `VA-nn` e stanno nel registro §9.
+Il criterio di chiusura dei gate è: **zero voci aperte applicabili al gate**.
+
+### 0.1 I due gate bloccanti
+
+Nessun altro ruolo può aggirarli.
+
+| Gate | Che cosa blocca | Condizione di sblocco |
+|---|---|---|
+| **G-PRESS** | Qualunque **prova in pressione**, anche la prima messa in pressione a vuoto | §4.6 completo + tutte le voci `VA` marcate `G-PRESS` chiuse |
+| **G-INST-A** | **Installazione dell'Unità A** sul balcone e ogni prova all'aperto con payload attivo | §2.4 chiusa **con gli estremi dell'atto comunale** + voci `VA` marcate `G-INST-A` chiuse |
+
+Il gate di **fase 4** (§9 di `docs/PROJECT.md`) contiene G-PRESS e G-INST-A.
+Il gate di **fase 6** contiene le voci marcate `G-F6` (esca, ricarica, privacy
+acustica).
+
 ---
 
 ## 1. Nessun sistema laser

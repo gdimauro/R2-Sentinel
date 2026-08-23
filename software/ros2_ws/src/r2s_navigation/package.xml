@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<package format="3">
+  <name>r2s_navigation</name>
+  <version>0.1.0</version>
+  <description>
+    Navigazione Unita' B: Nav2, slam_toolbox, docking e recupero.
+    SCHELETRO: qui stanno launch e parametri, non l'algoritmo. Owner: autonomy.
+    LE MAPPE SLAM NON ENTRANO IN GIT: sono la planimetria dell'abitazione
+    (CONTRIBUTING.md §Privacy). maps/ e' in .gitignore e la CI lo verifica.
+  </description>
+  <maintainer email="gdimauro@codearchitects.com">R2-Sentinel</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>nav2_bringup</depend>
+  <depend>nav2_common</depend>
+  <depend>slam_toolbox</depend>
+  <depend>tf2_ros</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>r2s_interfaces</depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+    <r2s_owner>autonomy</r2s_owner>
+  </export>
+</package>

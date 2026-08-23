@@ -19,6 +19,11 @@ giornata con `/cost`, oppure ricavato dal budget residuo, e trascritto qui.
 se viene da un report di agente (**M**, misurato), da `/cost` (**M**), o da
 stima (**S**).
 
+**Piano: Claude Max 20× (200 $/mese).** I token non hanno costo marginale: si
+consuma **capienza** (finestra mobile di 5 ore + tetto settimanale), non denaro.
+Il libro mastro li conta comunque, perché la capienza esaurita blocca il lavoro
+esattamente come farebbe un budget finito.
+
 **Budget:** **750.000 token/giorno**, deciso il 2026-08-23. Non si accumula:
 il non speso è perso, quindi il valore sta nel *quando* si spende, non nel
 risparmiare.
@@ -144,8 +149,11 @@ bilancio.
 
 *(nessuno alla data odierna)*
 
-| Data | Voce | € | Fornitore | Note |
-|---|---|---|---|---|
+**Tutti gli acquisti vanno fatti con fattura intestata** — vedi `ACQUISTI.md`.
+Una riga senza estremi di fattura è una riga incompleta.
+
+| Data | Voce | € | Fornitore | N. fattura | Note |
+|---|---|---|---|---|---|
 
 ---
 

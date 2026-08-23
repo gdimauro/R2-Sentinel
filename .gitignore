@@ -37,3 +37,83 @@ docs/journal/media/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# =============================================================================
+# Aggiunte software-platform (D-16..D-21). Prima barriera; la seconda e' la CI
+# (scripts/ci/check_hygiene.py), perche' .gitignore non protegge da `git add -f`.
+# =============================================================================
+
+# ROS 2 — artefatti di build del workspace
+software/ros2_ws/build/
+software/ros2_ws/install/
+software/ros2_ws/log/
+.colcon_defaults_local.yaml
+
+# ESP-IDF — toolchain e artefatti locali (l'SDK vive fuori dal repo)
+firmware/**/build/
+firmware/**/sdkconfig
+firmware/**/sdkconfig.old
+firmware/**/managed_components/
+.esp-idf/
+.espressif/
+
+# PRIVACY (CONTRIBUTING.md §Privacy, SAFETY.md) — non deve mai entrare in history
+# Mappe SLAM: sono la planimetria dell'abitazione
+*.pgm
+*.posegraph
+map_*.yaml
+maps/
+slam_maps/
+software/ros2_ws/**/maps/
+
+# Audio registrato in casa e riprese di interni
+*.wav
+*.flac
+*.mp3
+*.ogg
+*.m4a
+*.aac
+*.mp4
+*.mov
+*.mkv
+recordings/
+capture/
+data/raw/
+software/acoustic/recordings/
+# Unica eccezione: fixture audio SINTETICHE (generate da script, nessun contenuto
+# reale registrato in casa). Devono avere il suffisso .synth.wav ed essere <1 MB.
+!tests/fixtures/audio/*.synth.wav
+
+# Credenziali
+.env
+.env.*
+!.env.example
+secrets.yaml
+secrets.yml
+*.pem
+*.key
+!**/*.pub.key
+id_rsa*
+credentials.json
+mqtt_credentials*
+
+# Pesi dei modelli: fuori dal repository, recuperabili via models/MANIFEST.yaml
+*.pt
+*.pth
+*.onnx
+*.hef
+*.engine
+*.tflite
+models/weights/
+datasets/
+
+# Python tooling
+.venv/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Output dell'harness di test
+artifacts/
+reports/

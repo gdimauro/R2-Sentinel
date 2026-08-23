@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<package format="3">
+  <name>r2s_mqtt_bridge</name>
+  <version>0.1.0</version>
+  <description>
+    Ponte ROS 2 <-> MQTT verso Home Assistant (§6). E' il confine fra le due
+    unita' e il mondo esterno: schema dei topic, formato dei payload e
+    comportamento in caduta del broker sono definiti UNA VOLTA qui.
+    Owner: software-platform. Schema: config/topics.yaml -> docs/interfaces/MQTT.md.
+  </description>
+  <maintainer email="gdimauro@codearchitects.com">R2-Sentinel</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>r2s_interfaces</depend>
+  <exec_depend>python3-paho-mqtt</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-jsonschema</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+    <r2s_owner>software-platform</r2s_owner>
+  </export>
+</package>

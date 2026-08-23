@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>r2s_bringup</name>
+  <version>0.1.0</version>
+  <description>
+    Avvio integrato delle due unita'. Nessuna logica: solo launch e parametri.
+    E' il punto in cui si vede il sistema intero, quindi e' di software-platform
+    e non di uno dei due equipaggi.
+  </description>
+  <maintainer email="gdimauro@codearchitects.com">R2-Sentinel</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>r2s_vision</exec_depend>
+  <exec_depend>r2s_acoustic</exec_depend>
+  <exec_depend>r2s_navigation</exec_depend>
+  <exec_depend>r2s_mqtt_bridge</exec_depend>
+  <exec_depend>r2s_interfaces</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <r2s_owner>software-platform</r2s_owner>
+  </export>
+</package>

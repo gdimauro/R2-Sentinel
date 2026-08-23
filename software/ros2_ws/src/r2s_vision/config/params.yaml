@@ -1,0 +1,5 @@
+# Parametri di r2s_vision — segnaposto di piattaforma.
+# I valori reali sono responsabilita' dell'owner dichiarato in package.xml.
+/**:
+  ros__parameters:
+    enabled: false

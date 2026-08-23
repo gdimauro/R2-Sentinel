@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<package format="3">
+  <name>r2s_acoustic</name>
+  <version>0.1.0</version>
+  <description>
+    Percezione acustica Unita' B: microfono I2S 48 kHz, FFT, classificatore
+    della firma alare 400-600 Hz (D-04), pubblicazione AcousticEvent.
+    SCHELETRO: nessun algoritmo qui dentro. Owner: acoustic-perception.
+    PRIVACY: l'audio grezzo non lascia il dispositivo e non entra in git.
+  </description>
+  <maintainer email="gdimauro@codearchitects.com">R2-Sentinel</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>r2s_interfaces</depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+    <r2s_owner>acoustic-perception</r2s_owner>
+  </export>
+</package>
