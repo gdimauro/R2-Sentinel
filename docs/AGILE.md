@@ -60,7 +60,7 @@ sinottico. Non è una riunione.
 |---|---|
 | Product Owner | **Sponsor** (la persona): priorità, budget, decisioni di §10 |
 | Tech Lead | **chief-engineer**: architettura, confini, accettazione delle misure |
-| Team | Gli otto agenti specialisti |
+| Team | I nove agenti specialisti |
 | *Scrum Master* | **Nessuno.** Non c'è nulla da facilitare: i blocchi sono visibili all'istante. |
 
 ## 6. Cosa NON facciamo, e perché
@@ -70,6 +70,10 @@ sinottico. Non è una riunione.
   e calendario.
 - **Retrospettive come riunione** — la funzione ce l'ha già il giornale
   (`journal/`), che registra errori e «da rifare diversamente» il giorno stesso.
+  Dalla D-16 la *funzione* retrospettiva ha un proprietario, `retrospective`, che
+  però non convoca nulla: legge report, giornale e libro mastro e ne ricava la
+  sintesi serale e le proposte di emendamento ai mandati. Resta escluso il rito,
+  non il miglioramento continuo.
 - **Sprint planning come cerimonia** — la priorità la decide la scadenza, ed è
   visibile sulla board.
 

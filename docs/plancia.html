@@ -206,6 +206,47 @@ tfoot td{border-top:1px solid var(--line); font-weight:600; border-bottom:0}
 .bar-row .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right; font-size:12.5px}
 
 
+
+/* ---------- board ---------- */
+.sprint{display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:15px 20px; border-bottom:1px solid var(--line-soft)}
+.sprint .goal{flex:1 1 300px; min-width:0}
+.sprint .goal b{font-family:"Saira Condensed",sans-serif; font-size:17px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; display:block}
+.sprint .goal span{font-size:13px; color:var(--tx-2)}
+.sprint .gate{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; padding:6px 11px; border-radius:2px;
+  background:var(--stop-bg); border:1px solid var(--stop); color:var(--stop); font-weight:600;
+}
+.board{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr)); gap:0}
+.col{border-right:1px solid var(--line-soft); min-width:0}
+.col:last-child{border-right:0}
+.col-h{
+  padding:10px 13px; border-bottom:1px solid var(--line-soft); background:var(--panel-2);
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--tx-3); display:flex; justify-content:space-between; align-items:center;
+}
+.col-h b{color:var(--tx); font-weight:600}
+.col-body{padding:10px; display:flex; flex-direction:column; gap:8px}
+.tk{
+  background:var(--panel); border:1px solid var(--line); border-left-width:2px; border-radius:2px;
+  padding:9px 11px; font-size:12.5px;
+}
+.tk.a{border-left-color:var(--a)} .tk.b{border-left-color:var(--b)} .tk.x{border-left-color:var(--idle)}
+.tk.you{border-left-color:var(--stop); background:var(--stop-bg)}
+.tk .t{font-weight:600; line-height:1.35; margin-bottom:5px}
+.tk .m{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--tx-3); letter-spacing:.03em}
+.tk .blk{margin-top:5px; font-size:11.5px; color:var(--stop)}
+.col.done .tk .t{color:var(--tx-2); font-weight:500}
+
+/* ---------- standup ---------- */
+.stand{display:flex; flex-direction:column}
+.su{display:grid; grid-template-columns:170px 1fr; gap:16px; padding:13px 18px; border-bottom:1px solid var(--line-soft)}
+.su:last-child{border-bottom:0}
+.su .who{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; min-width:0; word-break:break-word}
+.su .who small{display:block; font-family:"IBM Plex Sans",sans-serif; font-size:10.5px; color:var(--tx-3); font-weight:400; margin-top:2px; letter-spacing:.03em; text-transform:uppercase}
+.su-g{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 16px; font-size:12.5px}
+.su-g div b{display:block; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--tx-3); margin-bottom:3px; font-weight:600}
+.su-g .bk{color:var(--stop)}
+
 /* ---------- contabilità ---------- */
 .money{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:0}
 .cur{padding:16px 20px; border-right:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft)}
@@ -291,6 +332,7 @@ footer a{color:var(--tx-2)}
       <div class="kpi"><div class="n" id="kpi-crew">—</div><div class="l">Agenti in squadra</div></div>
       <div class="kpi"><div class="n">~2,9k<small>&nbsp;€</small></div><div class="l">Capitale previsto</div></div>
       <div class="kpi"><div class="n">750<small>k/g</small></div><div class="l">Budget token</div></div>
+      <div class="kpi alert"><div class="n">13<small>&nbsp;gg</small></div><div class="l">Margine stagionale</div></div>
     </div>
   </div>
 
@@ -386,6 +428,34 @@ footer a{color:var(--tx-2)}
     <div class="card bars" id="bom"></div>
   </section>
 
+
+
+  <!-- =============== BOARD =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Board</h2>
+      <span class="note">Lo sprint è il gate, non la settimana. «In verifica» è la colonna che conta: consegnato ≠ misurato.</span>
+    </div>
+    <div class="card">
+      <div class="sprint">
+        <div class="goal">
+          <b>Sprint 0 — Sbloccare il calendario</b>
+          <span>Registratore notturno in funzione, git-lfs operativo, stampante ordinata. Tutto il resto può aspettare; la stagione no.</span>
+        </div>
+        <span class="gate">Gate: prima notte registrata entro il 05/09</span>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+  </section>
+
+  <!-- =============== STANDUP =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Standup</h2>
+      <span class="note">Il terzo punto è l'unico che conta: quasi tutti i blocchi sono acquisti o decisioni tue.</span>
+    </div>
+    <div class="card stand" id="standup"></div>
+  </section>
 
   <!-- =============== CONTABILITÀ =============== -->
   <section>
@@ -612,6 +682,68 @@ document.querySelectorAll("th.sortable").forEach(th=>{
 });
 document.querySelector('th.sortable[data-k="d"]').setAttribute("data-dir","desc");
 draw();
+
+
+/* ============ BOARD ============ */
+const COLS=[["backlog","Backlog"],["pronto","Pronto"],["corso","In corso"],["verifica","In verifica"],["fatto","Fatto"]];
+const TK=[
+ {c:"corso",t:"Agente <code>retrospective</code> — miglioramento continuo dei mandati",o:"chief-engineer",u:"x"},
+ {c:"corso",t:"Dossier di conformità: L.157/1992, apparecchi in pressione, privacy",o:"compliance-safety",u:"x",b:"Serve il comune dell'installazione"},
+
+ {c:"verifica",t:"Catena di registrazione notturna: registratore, spettro, indice del dataset",o:"acoustic-perception",u:"b",b:"Va provata su una notte vera"},
+ {c:"verifica",t:"Scheletro workspace ROS 2, CI, harness dei criteri di FATTO, contratto MQTT",o:"software-platform",u:"x",b:"Riproducibilità non verificabile su macOS"},
+
+ {c:"pronto",t:"Istruttoria getto d'aria contro nebulizzazione",o:"payload-fluidics",u:"a",b:"Da rilanciare: bloccato dai safeguard API"},
+ {c:"pronto",t:"Vincoli di baricentro e ingombro da consegnare a mechatronics",o:"autonomy",u:"b"},
+ {c:"pronto",t:"<b>Installare git-lfs</b> — brew install git-lfs && git lfs install",o:"SPONSOR",u:"you",b:"Blocca il primo export CAD"},
+
+ {c:"backlog",t:"<b>Ordinare il microfono di misura</b> (UMIK-1, con fattura)",o:"SPONSOR",u:"you",b:"⏳ Scade il 05/09 — poi la fase 5 slitta di 12 mesi"},
+ {c:"backlog",t:"Prima notte di registrazione",o:"acoustic + sponsor",u:"b",b:"Attende il microfono"},
+ {c:"backlog",t:"<b>Ordinare stampante e filamenti</b>",o:"SPONSOR",u:"you",b:"Blocca tutta la catena fisica"},
+ {c:"backlog",t:"Taratura profili ASA, PETG, PLA + test interfaccia D-11",o:"mechatronics",u:"x",b:"Attende la stampante"},
+ {c:"backlog",t:"CAD della testa pan-tilt",o:"mechatronics",u:"a",b:"Attende: rete o autonoma? da quale modulo partire?"},
+ {c:"backlog",t:"<b>Decidere: rete o autonoma; da quale modulo CAD partire; getto o nebulizzazione</b>",o:"SPONSOR",u:"you",b:"Bloccano F1 e F4"},
+ {c:"backlog",t:"Strumenti di misura da aggiungere al BOM",o:"chief-engineer",u:"x",b:"Senza, nessun gate può chiudere"},
+ {c:"backlog",t:"Detection piccioni su Hailo",o:"vision-perception",u:"a",b:"Attende hardware"},
+
+ {c:"fatto",t:"Squadra di 9 agenti derivata dalla decomposizione del sistema",o:"chief-engineer",u:"x"},
+ {c:"fatto",t:"Igiene repository, primo commit, PR #1 integrata",o:"sponsor + claude",u:"x"},
+ {c:"fatto",t:"Piano economico a tre valute e libro mastro",o:"claude",u:"x"},
+ {c:"fatto",t:"Sinottico, libro giornale, materiale narrativo",o:"claude",u:"x"},
+ {c:"fatto",t:"Metodo agile: sprint = gate",o:"claude",u:"x"},
+ {c:"fatto",t:"Rapporto giornaliero via email, con scadenze calcolate",o:"claude",u:"x"},
+ {c:"fatto",t:"Lista acquisti per scadenza, con vincolo di fattura",o:"claude",u:"x"}
+];
+document.getElementById("board").innerHTML=COLS.map(([k,label])=>{
+  const items=TK.filter(t=>t.c===k);
+  return `<div class="col${k==="fatto"?" done":""}">
+    <div class="col-h"><b>${label}</b><span>${items.length}</span></div>
+    <div class="col-body">${items.map(t=>
+      `<div class="tk ${t.u}"><div class="t">${t.t}</div><div class="m">${t.o}</div>${t.b?`<div class="blk">${t.b}</div>`:""}</div>`
+    ).join("")||'<div style="color:var(--tx-3);font-size:12px;padding:4px">—</div>'}</div></div>`;
+}).join("");
+
+/* ============ STANDUP ============ */
+const SU=[
+ {w:"chief-engineer",d:"2026-08-23",a:"Squadra di 8 specialisti derivata dal sistema; D-13, D-14, D-15; quattro questioni nuove in §10",b:"Scrive il mandato di <code>retrospective</code>",k:"Nessun blocco"},
+ {w:"acoustic-perception",d:"2026-08-23",a:"Registratore notturno, analisi spettrale 300–800 Hz, schema metadati, indice del dataset",b:"Attende una notte reale per validare",k:"<b>Il microfono non è ordinato.</b> Ogni giorno perso è finestra stagionale"},
+ {w:"software-platform",d:"2026-08-23",a:"Workspace ROS 2 con 6 pacchetti, CI di igiene, harness dei criteri di FATTO, contratto MQTT",b:"Verifica del gate Git LFS",k:"<b>git-lfs non installato</b> — serve un comando dallo sponsor"},
+ {w:"compliance-safety",d:"2026-08-23",a:"—",b:"Istruisce quadro nazionale, apparecchi in pressione, privacy",k:"<b>Manca il comune</b> dell'installazione: la parte locale resta una checklist vuota"},
+ {w:"payload-fluidics",d:"2026-08-23",a:"—",b:"Fermo",k:"<b>Bloccato dai safeguard API</b> (flag bio) sul confronto getto/nebulizzazione. Da riformulare in termini di soglia di non lesività"},
+ {w:"autonomy",d:"2026-08-23",a:"—",b:"Non ancora attivato",k:"Nessuno: può partire quando serve"},
+ {w:"mechatronics",d:"2026-08-23",a:"—",b:"Non ancora attivato",k:"<b>Stampante non ordinata</b> e due decisioni di §10 aperte"},
+ {w:"vision-perception",d:"2026-08-23",a:"—",b:"Non ancora attivato",k:"Attende hardware: è corretto che sia fermo"},
+ {w:"design-docs",d:"2026-08-23",a:"—",b:"Non ancora attivato",k:"Attende un modulo congelato da documentare"}
+];
+document.getElementById("standup").innerHTML=SU.map(s=>
+ `<div class="su">
+   <div class="who">${s.w}<small>${s.d}</small></div>
+   <div class="su-g">
+     <div><b>Consegnato</b>${s.a}</div>
+     <div><b>Adesso</b>${s.b}</div>
+     <div class="bk"><b style="color:var(--tx-3)">Bloccato da</b>${s.k}</div>
+   </div>
+ </div>`).join("");
 
 </script>
 

@@ -264,7 +264,8 @@ def comando_rumore(ns) -> int:
 # ==========================================================================
 
 def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
-                min_armoniche, durata_min_s, buco_max_frame):
+                min_armoniche, durata_min_s, buco_max_frame,
+                rifiuto_voce_db=4.0):
     """Rileva i tratti in cui c'è un tono in banda con struttura armonica.
 
     Metodo: pavimento di rumore per-bin = mediana temporale del file stesso.
@@ -272,12 +273,31 @@ def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
     una stanza cambia di notte in notte e di casa in casa, e una soglia fissa
     in dBFS sarebbe tarata su un solo salotto. La mediana temporale è immune
     agli eventi rari — cioè proprio alle zanzare, che sono rare per definizione.
+
+    Reiettore di voce (`rifiuto_voce_db`). Misurato su segnale sintetico: la
+    struttura armonica NON basta a distinguere una zanzara da una vocale umana,
+    perché le armoniche di una voce a 140 Hz cadono in pieno nella banda
+    400–600 Hz e sono altrettanto regolari. Restava l'unico falso positivo
+    anche portando la soglia SNR a 16 dB. Discriminante che funziona: la voce
+    porta con sé la propria fondamentale in 100–300 Hz, la zanzara no. Un frame
+    in cui la banda 100–300 Hz è elevata di più di `rifiuto_voce_db` sopra la
+    propria mediana notturna viene scartato.
+    Separazione misurata sul sintetico: voce +4,7 dB mediani, zanzara +0,0 dB.
+    DA RIVALIDARE su audio reale: in una stanza vera quella banda contiene
+    anche frigorifero e traffico, e la normalizzazione sulla mediana ne
+    assorbe solo la parte stazionaria.
     """
     st = DSP.statistiche_per_bin(ris, quantili=(0.5,))
     if not st["n_frame"]:
         return []
     pavimento = st["quantili"][0.5]
     freq = ris.frequenze
+
+    if rifiuto_voce_db > 0:
+        p_basse = [DSP.potenza_banda(fr, freq, 100, 300) for fr in ris.potenze]
+        med_basse = DSP.mediana(p_basse) or 1e-30
+    else:
+        p_basse, med_basse = None, 1.0
 
     def snr_in(fr, centro, tolleranza):
         p = DSP.picco_interpolato(fr, freq, centro * (1 - tolleranza),
@@ -289,7 +309,11 @@ def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
         return f_pic, DSP.db(pot / base)
 
     candidati = []
+    n_scartati_voce = 0
     for i, fr in enumerate(ris.potenze):
+        if p_basse is not None and DSP.db(p_basse[i] / med_basse) > rifiuto_voce_db:
+            n_scartati_voce += 1
+            continue
         p = DSP.picco_interpolato(fr, freq, f_min, f_max)
         if p is None:
             continue
@@ -345,6 +369,8 @@ def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
             "armoniche": arm_rappr,
             "n_frame": len(g),
         })
+    if fuori:
+        fuori[0]["_frame_scartati_voce"] = n_scartati_voce
     return fuori
 
 

@@ -1,0 +1,72 @@
+# =============================================================================
+# PESI DEI MODELLI E DATASET — vivono FUORI dal repository, ma sono recuperabili.
+#
+# "Ce li ho sul portatile" non e' una strategia di storage: il primo che clona
+# il repo su una macchina nuova non ha nulla, e nessuno sa piu' quale peso ha
+# prodotto quale numero.
+#
+# Regola: ogni artefatto ha sorgente, dimensione, sha256 e provenienza.
+# Senza sha256 non e' scaricabile: `make models` rifiuta un artefatto che non
+# puo' verificare, perche' un peso sbagliato produce numeri sbagliati che
+# sembrano giusti.
+#
+# Scarica e verifica:   make models
+# Solo verifica:        scripts/models/fetch_models.py --verify-only
+# Calcola lo sha256:    scripts/models/fetch_models.py --hash <file>
+# =============================================================================
+
+version: 1
+
+# Sorgente primaria: GitHub Releases di questo repository.
+# Motivo: gia' autenticata dal remoto, versionata per tag, gratuita, e non
+# introduce un servizio in piu' da mantenere. Limite noto: 2 GB per file.
+# Se un artefatto supera i 2 GB va su un mirror e resta indicato qui.
+sources:
+  release:
+    kind: github-release
+    repo: gdimauro/R2-Sentinel
+    url_template: "https://github.com/{repo}/releases/download/{tag}/{name}"
+  mirror:
+    kind: http
+    # NAS/URL alternativo, opzionale. Vuoto = non configurato.
+    base_url: "${R2S_MODEL_MIRROR:-}"
+
+# Dove finiscono i file scaricati (percorso in .gitignore).
+destination: models/weights
+
+artifacts: []
+# Formato di una voce (esempio, NON attivo):
+#
+#   - name: yolo11n-pigeon-v1.pt
+#     kind: weights            # weights | dataset-index | calibration
+#     role: vision-perception
+#     source: release
+#     tag: models-v1
+#     size_bytes: 5312000
+#     sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+#     provenance: >-
+#       Addestrato su dataset piccioni <fonte>, licenza <licenza>, split
+#       train/val/test descritto in <documento>. Chi lo ha prodotto e quando.
+#     produces: [vis-g3-map]   # criteri di FATTO che dipendono da questo file
+#
+# Nota per vision-perception: il .hef per Hailo va qui come artefatto a se',
+# con lo sha256 del compilato, perche' due compilazioni dello stesso .onnx non
+# sono bit-identiche e il numero di fps si riferisce a una di esse.
+#
+# Nota per acoustic-perception: il dataset notturno NON va qui per intero.
+# Qui va l'indice (dataset_index.yaml, testo) e l'archivio anonimizzato solo se
+# la procedura di anonimizzazione e' documentata e superata. L'audio grezzo di
+# interni non lascia il dispositivo (SAFETY.md).
+
+datasets:
+  # I dataset non si versionano: si descrivono, e si rendono ricostruibili.
+  - id: piccioni-pubblico
+    role: vision-perception
+    status: da-definire
+    note: "Fonte pubblica da scegliere; licenza e attribuzione obbligatorie (§6)."
+  - id: zanzare-notturno
+    role: acoustic-perception
+    status: in-raccolta
+    note: >-
+      Costruito da zero (§6). Indice versionato in software/acoustic/dataset_index.yaml;
+      l'audio resta fuori dal repository. Finestra stagionale: vedi PROJECT.md §10.
