@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Prima barriera. La CI e' la seconda, ma arriva dopo che il commit esiste.
+# Attivato da: git config core.hooksPath scripts/git-hooks (bootstrap passo 'hooks').
+# Bypass: git commit --no-verify — e' tracciato, ma se lo usi per far passare
+# un file privato stai creando un problema che non si risolve piu'.
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+PY="${R2S_PYTHON:-python3}"
+[[ -x "$ROOT/.venv/bin/python" ]] && PY="$ROOT/.venv/bin/python"
+
+fail=0
+
+# 1. Gate 0: se stai committando un export CAD, git-lfs deve esistere.
+if git diff --cached --name-only | grep -qiE '\.(step|stp|stl|3mf|f3d|iges|igs)$'; then
+  if ! git lfs version >/dev/null 2>&1; then
+    cat <<'MSG'
+
+COMMIT BLOCCATO — stai committando un export CAD e git-lfs NON e' installato.
+
+Il file entrerebbe in history come binario grezzo e da li' non si toglie piu'.
+
+  macOS:   brew install git-lfs && git lfs install
+  Ubuntu:  sudo apt-get install -y git-lfs && git lfs install
+
+Poi rifai il commit e verifica con: git lfs ls-files
+
+MSG
+    fail=1
+  fi
+fi
+
+# 2. Igiene completa sul contenuto in stage.
+"$PY" "$ROOT/scripts/ci/check_hygiene.py" --staged || fail=1
+
+if [[ $fail -ne 0 ]]; then
+  echo "pre-commit: commit rifiutato."
+  exit 1
+fi
+exit 0

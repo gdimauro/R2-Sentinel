@@ -1,0 +1,9 @@
+# Default versionati: sdkconfig (generato) e' in .gitignore, questo no.
+# Senza defaults versionati due sviluppatori compilano due firmware diversi
+# e non se ne accorgono.
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+CONFIG_FREERTOS_HZ=1000
+CONFIG_ESP_TASK_WDT_EN=y
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y

@@ -1,0 +1,9 @@
+# Versioni fissate della toolchain firmware. Sorgente unica: la usano
+# scripts/setup/50_esp_idf.sh, la CI e chiunque debba riprodurre una build.
+# "L'ultima versione" non e' una versione: cambia sotto i piedi e il firmware
+# che compilava ieri non compila oggi.
+idf_version: v5.3.2
+targets: esp32s3
+# micro-ROS come componente esterno, allineato a ROS 2 Jazzy (PROJECT.md §6)
+micro_ros_component: https://github.com/micro-ROS/micro_ros_espidf_component.git
+micro_ros_branch: jazzy

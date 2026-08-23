@@ -1,0 +1,26 @@
+# --- PRIVACY: l'audio notturno di un'abitazione NON entra nel repository ---
+# CONTRIBUTING.md: "la history di Git non si cancella davvero".
+# Il registratore scrive di default in ~/r2-sentinel-audio (fuori dalla working
+# copy) e si RIFIUTA di scrivere qui dentro senza --consenti-audio-nel-repo.
+# Queste regole sono la seconda rete, non la prima.
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.ogg
+*.aif
+*.aiff
+*.raw
+*.pcm
+dati/
+audio/
+registrazioni/
+
+# Referti di analisi generati localmente (rigenerabili da audio + comandi)
+referti/
+*.tmp
+
+# --- COSA INVECE VA VERSIONATO, e non deve essere ignorato ---
+!dataset/notti/*.json
+!dataset/indice.csv
+!dataset/indice.json

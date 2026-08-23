@@ -1,0 +1,11 @@
+# Ambiente Python di PIATTAFORMA (CI, harness, generatori).
+# Non e' l'ambiente di runtime dei nodi ROS 2: quello usa il python di sistema.
+# Versioni con vincolo minimo-e-massimo: "ultima versione" non e' riproducibile.
+
+pytest>=8.0,<9
+pytest-timeout>=2.3,<3
+PyYAML>=6.0,<7
+jsonschema>=4.21,<5
+paho-mqtt>=2.0,<3        # bridge MQTT e test di riconnessione
+ruff>=0.5,<1             # lint python veloce (sostituisce flake8+isort in CI)
+tabulate>=0.9,<1         # rendering delle tabelle dell'harness

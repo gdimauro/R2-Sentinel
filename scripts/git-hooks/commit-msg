@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Promemoria non bloccante: se il commit tocca l'architettura, il Decision Log
+# va aggiornato (CONTRIBUTING.md). Blocca la CI, non il commit locale: il
+# messaggio serve a farsene carico subito invece di scoprirlo in PR.
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+FILES="$(git diff --cached --name-only)"
+if echo "$FILES" | grep -qE '^(software/ros2_ws/src/r2s_interfaces/(msg|srv)/|\.github/workflows/|scripts/(bootstrap\.sh|setup/)|software/ros2_ws/src/r2s_mqtt_bridge/config/topics\.yaml|SAFETY\.md|\.gitattributes)'; then
+  if ! echo "$FILES" | grep -q '^docs/PROJECT.md$'; then
+    cat <<'MSG'
+
+nota: questo commit tocca un file architetturale e non aggiorna docs/PROJECT.md §3.
+      La CI lo fara' fallire in PR. Formato della riga:
+      | D-NN | Decisione | Perche', e cosa e' stato scartato | AAAA-MM-GG |
+      Se davvero non e' una decisione, aggiungi al commit il trailer:
+      Decision-Log-Exempt: <motivo, almeno 20 caratteri>
+
+MSG
+  fi
+fi
+exit 0

@@ -1,0 +1,625 @@
+# =============================================================================
+# REGISTRO DEI CRITERI DI FATTO
+#
+# Ogni criterio di FATTO dichiarato nei file agente ha qui una riga con UN
+# comando che lo esegue o che ne raccoglie la misura. Un criterio senza comando
+# non e' verificabile: resta in questo file con `command: null` e `blocked_by`
+# compilato, e viene segnalato al chief-engineer. Non sparisce.
+#
+# Esecuzione:   ./scripts/fatto.sh                 tutto cio' che gira senza banco
+#               ./scripts/fatto.sh <ruolo>         solo un ruolo
+#               ./scripts/fatto.sh --list          elenco con stato
+#               R2S_BENCH=1 ./scripts/fatto.sh ... include le prove da banco
+#
+# Campi:
+#   kind:    ci      -> gira ovunque, anche in CI, senza hardware
+#            bench   -> richiede il banco fisico; in CI viene SALTATO, mai fallito
+#            manual  -> protocollo umano; il comando raccoglie/valida la misura
+#   status:  stub        -> il comando esiste ma il test e' da scrivere (owner)
+#            implemented -> il comando misura davvero
+#   La distinzione conta: uno stub che "passa" e' peggio di un test assente.
+# =============================================================================
+
+version: 1
+updated: 2026-08-23
+
+roles:
+  - id: software-platform
+    file: .claude/agents/software-platform.md
+  - id: mechatronics
+    file: .claude/agents/mechatronics.md
+  - id: vision-perception
+    file: .claude/agents/vision-perception.md
+  - id: acoustic-perception
+    file: .claude/agents/acoustic-perception.md
+  - id: autonomy
+    file: .claude/agents/autonomy.md
+  - id: payload-fluidics
+    file: .claude/agents/payload-fluidics.md
+  - id: compliance-safety
+    file: .claude/agents/compliance-safety.md
+  - id: design-docs
+    file: .claude/agents/design-docs.md
+
+criteria:
+
+  # ---------------------------------------------------------------- platform --
+  - id: plat-gate0-lfs
+    role: software-platform
+    gate: "0"
+    criterio: "git-lfs installato e inizializzato; un .step committato e' un puntatore <200 byte"
+    metric: {name: lfs_pointer_bytes, op: "<", target: 200, unit: byte}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/check_lfs.sh --prove"
+
+  - id: plat-hygiene
+    role: software-platform
+    gate: "CI"
+    criterio: "La CI fallisce su pesi, dataset, mappe SLAM, audio, credenziali, CAD fuori LFS"
+    metric: {name: regole_provate_a_fallire, op: ">=", target: 8, unit: regole}
+    kind: ci
+    status: implemented
+    command: ".venv/bin/pytest tests/ci/test_hygiene_rules.py -q"
+
+  - id: plat-history-binaries
+    role: software-platform
+    gate: "artefatti"
+    criterio: "0 file binari >5 MB nella history fuori da LFS"
+    metric: {name: binari_oltre_soglia, op: "==", target: 0, unit: file}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/check_history_binaries.sh 5"
+
+  - id: plat-models-checksum
+    role: software-platform
+    gate: "artefatti"
+    criterio: "Pesi dei modelli recuperabili da sorgente definita con checksum verificato"
+    metric: {name: checksum_non_verificati, op: "==", target: 0, unit: file}
+    kind: ci
+    status: implemented
+    command: "scripts/models/fetch_models.py --verify-only"
+
+  - id: plat-mqtt-schema
+    role: software-platform
+    gate: "MQTT"
+    criterio: "0 topic MQTT non documentati; docs/interfaces/MQTT.md allineato alla sorgente"
+    metric: {name: topic_non_documentati, op: "==", target: 0, unit: topic}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/check_mqtt_topics.py && scripts/gen/gen_mqtt_docs.py --check"
+
+  - id: plat-mqtt-reconnect
+    role: software-platform
+    gate: "MQTT"
+    criterio: "Riconnessione automatica <=30 s dopo caduta del broker, 10 volte su 10"
+    metric: {name: riconnessioni_riuscite, op: "==", target: 10, unit: prove}
+    kind: ci
+    status: stub
+    command: ".venv/bin/pytest tests/ci/test_mqtt_resilience.py -q"
+    note: >-
+      Gira con un broker mosquitto locale in container: non richiede hardware.
+      Da implementare insieme al bridge reale.
+
+  - id: plat-mqtt-latency
+    role: software-platform
+    gate: "MQTT"
+    criterio: "Entrambe le unita' pubblicano stato con latenza <=2 s"
+    metric: {name: latenza_stato_p95_s, op: "<=", target: 2.0, unit: s}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_mqtt_latency.py -q"
+    requires: ["unita' A o B in esecuzione", "broker raggiungibile"]
+
+  - id: plat-bootstrap
+    role: software-platform
+    gate: "riproducibilita'"
+    criterio: "Da git clone a workspace compilato con un solo comando, <=30 min, 0 passi manuali"
+    metric: {name: tempo_bootstrap_min, op: "<=", target: 30, unit: min}
+    kind: ci
+    status: implemented
+    command: "scripts/verify_clean_bootstrap.sh"
+    note: "Richiede docker. Va eseguito 2 volte su ambiente vergine, non una."
+
+  - id: plat-firmware-build
+    role: software-platform
+    gate: "riproducibilita'"
+    criterio: "Toolchain ESP-IDF ricostruibile con lo stesso comando; firmware compila da zero"
+    metric: {name: build_firmware, op: "==", target: 0, unit: exit_code}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/build_firmware.sh"
+
+  # ------------------------------------------------------------ mechatronics --
+  - id: mech-g0-warping
+    role: mechatronics
+    gate: "0"
+    criterio: "Provino ASA 100 mm, warping <=0,3 mm agli angoli, 3/3"
+    metric: {name: warping_mm, op: "<=", target: 0.3, unit: mm}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio mech-g0-warping"
+    requires: ["stampante", "calibro o comparatore"]
+    note: "Misura umana: il comando registra il dato e verifica la soglia, non la misura."
+
+  - id: mech-g0-support-interface
+    role: mechatronics
+    gate: "0"
+    criterio: "Interfaccia PETG-sotto-ASA si stacca a mano, 3/3, senza residui"
+    metric: {name: provini_ok, op: "==", target: 3, unit: provini}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio mech-g0-support-interface"
+    requires: ["stampante con AMS"]
+
+  - id: mech-g1-dual-variant
+    role: mechatronics
+    gate: "1"
+    criterio: "Un solo sorgente CadQuery produce FDM e SLS da riga di comando, STEP+STL"
+    metric: {name: varianti_generate, op: "==", target: 2, unit: varianti}
+    kind: ci
+    status: stub
+    command: ".venv/bin/pytest tests/ci/test_cad_variants.py -q"
+    note: "Gira senza hardware: e' solo CadQuery. Owner del test: mechatronics."
+
+  - id: mech-g1-no-duplicates
+    role: mechatronics
+    gate: "1"
+    criterio: "Zero file CAD duplicati per variante; le differenze ricadono solo nei parametri dichiarati"
+    metric: {name: differenze_non_dichiarate, op: "==", target: 0, unit: differenze}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/cad_variant_diff.py"
+
+  - id: mech-g2-pointing-rms
+    role: mechatronics
+    gate: "2"
+    criterio: "Errore di puntamento RMS <=1,0 gradi su 20 cicli in 3 posizioni angolari"
+    metric: {name: rms_pointing_deg, op: "<=", target: 1.0, unit: deg}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_pointing.py -q -k rms"
+    requires: ["testa pan-tilt", "reticolo a 5 m", "camera di riscontro"]
+    blocked_by: "reticolo di riferimento a 5 m non ancora in BOM (PROJECT.md §10)"
+
+  - id: mech-g2-backlash
+    role: mechatronics
+    gate: "2"
+    criterio: "Gioco <=0,3 gradi misurato con inversione del senso di rotazione"
+    metric: {name: backlash_deg, op: "<=", target: 0.3, unit: deg}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_pointing.py -q -k backlash"
+    requires: ["testa pan-tilt", "reticolo a 5 m"]
+
+  - id: mech-g2-thermal-drift
+    role: mechatronics
+    gate: "2"
+    criterio: "Deriva termica <=0,5 gradi dopo 2 h con carter ASA a >=50 gradi C"
+    metric: {name: drift_deg, op: "<=", target: 0.5, unit: deg}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_pointing.py -q -k thermal"
+    requires: ["camera calda o esposizione al sole", "2 h di prova"]
+
+  - id: mech-g2-loop-jitter
+    role: mechatronics
+    gate: "2"
+    criterio: "Loop firmware 1 kHz con jitter <=100 us su 60 s continui"
+    metric: {name: jitter_us_max, op: "<=", target: 100, unit: us}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_firmware_timing.py -q"
+    requires: ["ESP32-S3", "analizzatore logico o timestamp micro-ROS"]
+    blocked_by: "analizzatore logico non ancora in BOM (PROJECT.md §10)"
+
+  - id: mech-g2-endstops
+    role: mechatronics
+    gate: "2"
+    criterio: "Arresto sui finecorsa entro 1 step su 20 attivazioni, in entrambi i sensi"
+    metric: {name: attivazioni_ok, op: "==", target: 20, unit: attivazioni}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_endstops.py -q"
+    requires: ["testa pan-tilt con finecorsa"]
+
+  # -------------------------------------------------------- vision-perception --
+  - id: vis-g3-fps
+    role: vision-perception
+    gate: "3"
+    criterio: ">=25 fps end-to-end a 640x640 su Hailo-8L, su 5 minuti continui"
+    metric: {name: fps_medio, op: ">=", target: 25, unit: fps}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_vision_throughput.py -q"
+    requires: ["Hailo-8L", "camera global shutter"]
+
+  - id: vis-g3-map
+    role: vision-perception
+    gate: "3"
+    criterio: "mAP@50 >=0,85 su test set >=300 immagini disgiunto dal training"
+    metric: {name: map50, op: ">=", target: 0.85, unit: "-"}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/eval_detector.py --split test"
+    note: >-
+      Gira senza Hailo (inferenza su CPU/GPU): richiede pero' pesi e test set,
+      che si scaricano con `make models`. Il dataset resta fuori dal repository.
+
+  - id: vis-g3-false-positives
+    role: vision-perception
+    gate: "3"
+    criterio: "<=1 falso positivo/ora su 8 h di ripresa diurna senza piccioni"
+    metric: {name: fp_per_ora, op: "<=", target: 1.0, unit: "1/h"}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/eval_detector.py --false-positive-run"
+    requires: ["8 h di ripresa dal balcone reale"]
+
+  - id: vis-g3-latency
+    role: vision-perception
+    gate: "3"
+    criterio: "Latenza rilevamento->comando <=150 ms al 95esimo percentile"
+    metric: {name: latenza_p95_ms, op: "<=", target: 150, unit: ms}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_vision_latency.py -q"
+    requires: ["Unita' A assemblata"]
+
+  - id: vis-g4-aim
+    role: vision-perception
+    gate: "4"
+    criterio: "Errore di puntamento <=1,0 gradi su 20 bersagli fra 3 e 6 m"
+    metric: {name: aim_error_deg, op: "<=", target: 1.0, unit: deg}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_aim.py -q"
+    requires: ["testa pan-tilt consegnata da mechatronics", "reticolo fisico"]
+
+  - id: vis-g4-calibration
+    role: vision-perception
+    gate: "4"
+    criterio: "La calibrazione si rigenera da script in <=10 min e il test fallisce se la geometria cambia"
+    metric: {name: tempo_calibrazione_min, op: "<=", target: 10, unit: min}
+    kind: ci
+    status: stub
+    command: ".venv/bin/pytest tests/ci/test_calibration_regen.py -q"
+
+  - id: vis-g4-error-budget
+    role: vision-perception
+    gate: "4"
+    criterio: "Budget d'errore scritto e concordato con mechatronics (ottica vs meccanica)"
+    metric: {name: documento_presente, op: "==", target: 1, unit: documento}
+    kind: ci
+    status: implemented
+    command: ".venv/bin/python scripts/measure/check_artifact.py docs/interfaces/error-budget-unita-a.md"
+
+  # ------------------------------------------------------ acoustic-perception --
+  - id: acu-g1-nights
+    role: acoustic-perception
+    gate: "1"
+    criterio: ">=20 notti utili registrate, ciascuna >=6 h a 48 kHz con metadati BME280"
+    metric: {name: notti_utili, op: ">=", target: 20, unit: notti}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/dataset_index.py --check software/acoustic/dataset_index.yaml"
+    note: >-
+      E' un contatore, non un test: legge l'indice versionato del dataset.
+      L'indice sta nel repository, l'audio NO (privacy).
+
+  - id: acu-g1-negative-nights
+    role: acoustic-perception
+    gate: "1"
+    criterio: ">=5 notti negative raccolte deliberatamente come controllo"
+    metric: {name: notti_negative, op: ">=", target: 5, unit: notti}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/dataset_index.py --check software/acoustic/dataset_index.yaml --negative"
+
+  - id: acu-g5-recall
+    role: acoustic-perception
+    gate: "5"
+    criterio: "Recall >=0,90 sui segmenti annotati contenenti zanzara"
+    metric: {name: recall, op: ">=", target: 0.90, unit: "-"}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/eval_classifier.py --metric recall"
+
+  - id: acu-g5-false-positives
+    role: acoustic-perception
+    gate: "5"
+    criterio: "<=1 falso positivo/ora su 8 h notturne non usate in training"
+    metric: {name: fp_per_ora, op: "<=", target: 1.0, unit: "1/h"}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/eval_classifier.py --metric fp_per_hour"
+
+  - id: acu-g5-latency
+    role: acoustic-perception
+    gate: "5"
+    criterio: "Latenza <=200 ms su Raspberry Pi 5 senza Hailo, CPU <=40% di un core"
+    metric: {name: latenza_ms, op: "<=", target: 200, unit: ms}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_acoustic_latency.py -q"
+    requires: ["Raspberry Pi 5"]
+
+  - id: acu-g5-signature
+    role: acoustic-perception
+    gate: "5"
+    criterio: "Fondamentale entro +-15 Hz in 400-600 Hz con >=2 armoniche documentate"
+    metric: {name: armoniche_documentate, op: ">=", target: 2, unit: armoniche}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/spectral_signature.py --report"
+
+  - id: acu-g5-fan-overlap
+    role: acoustic-perception
+    gate: "5"
+    criterio: "Spettro ventola misurato e sovrapposizione con la banda utile quantificata in dB"
+    metric: {name: overlap_db_misurato, op: "==", target: 1, unit: misura}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio acu-g5-fan-overlap"
+    requires: ["ventola centrifuga 80 mm", "microfono I2S", "riferimento acustico"]
+    blocked_by: "riferimento acustico di calibrazione non in BOM (PROJECT.md §10)"
+
+  # -------------------------------------------------------------- autonomy ----
+  - id: aut-g1-mech-note
+    role: autonomy
+    gate: "1"
+    criterio: "Nota a mechatronics con baricentro, interasse, quota LIDAR, carico in cima"
+    metric: {name: documento_presente, op: "==", target: 1, unit: documento}
+    kind: ci
+    status: implemented
+    command: ".venv/bin/python scripts/measure/check_artifact.py docs/interfaces/vincoli-telaio-unita-b.md"
+
+  - id: aut-g7-slam
+    role: autonomy
+    gate: "7"
+    criterio: "Mappa >=60 m2 con errore di chiusura d'anello <=10 cm, 3 sessioni"
+    metric: {name: loop_closure_cm, op: "<=", target: 10, unit: cm}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_slam.py -q"
+    requires: ["base mobile", "LIDAR", "ambiente reale"]
+    note: "La mappa prodotta NON entra nel repository: e' la planimetria di casa."
+
+  - id: aut-g7-docking
+    role: autonomy
+    gate: "7"
+    criterio: "20/20 agganci da 3 stanze, +-5 mm e +-3 gradi, rientro medio <=3 min"
+    metric: {name: agganci_riusciti, op: "==", target: 20, unit: agganci}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_docking.py -q"
+    requires: ["base di ricarica", "3 stanze"]
+
+  - id: aut-g7-safety
+    role: autonomy
+    gate: "7"
+    criterio: "0 collisioni e 0 cadute su 2 h di percorrenza continua"
+    metric: {name: eventi_collisione, op: "==", target: 0, unit: eventi}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_navigation_safety.py -q"
+    requires: ["2 h in ambiente arredato"]
+
+  - id: aut-g7-recovery
+    role: autonomy
+    gate: "7"
+    criterio: "Ripresa autonoma da blocco entro 60 s su 10 blocchi provocati"
+    metric: {name: recuperi_riusciti, op: "==", target: 10, unit: prove}
+    kind: bench
+    status: stub
+    command: ".venv/bin/pytest tests/bench/test_recovery.py -q"
+
+  - id: aut-g7-endurance
+    role: autonomy
+    gate: "7"
+    criterio: "Autonomia misurata in profilo d'uso reale, consegnata come numero"
+    metric: {name: autonomia_min, op: ">", target: 0, unit: min}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio aut-g7-endurance"
+    requires: ["pacco LiFePO4 (D-07)"]
+
+  # ------------------------------------------------------- payload-fluidics ---
+  - id: pay-a-jet-speed
+    role: payload-fluidics
+    gate: "4"
+    criterio: "Velocita' aria sul bersaglio a 5 m fra 8 e 25 m/s su griglia 5x5"
+    metric: {name: v_target_ms, op: "in", target: [8, 25], unit: m/s}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-jet-speed"
+    requires: ["anemometro a filo caldo o a ventolina"]
+    blocked_by: "anemometro non in BOM (PROJECT.md §10)"
+
+  - id: pay-a-no-particulate
+    role: payload-fluidics
+    gate: "4"
+    criterio: "20 raffiche contro foglio bianco a 1 m: 0 particelle visibili"
+    metric: {name: particelle, op: "==", target: 0, unit: particelle}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-no-particulate"
+
+  - id: pay-a-autonomy
+    role: payload-fluidics
+    gate: "4"
+    criterio: ">=30 raffiche da 0,5 s per carica; ricarica compressore <=5 min"
+    metric: {name: raffiche_per_carica, op: ">=", target: 30, unit: raffiche}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-autonomy"
+
+  - id: pay-a-safety-valve
+    role: payload-fluidics
+    gate: "4"
+    criterio: "Valvola di sicurezza <=6 bar provata 3 volte; 0 componenti in pressione stampati 3D"
+    metric: {name: componenti_stampati_in_pressione, op: "==", target: 0, unit: componenti}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-safety-valve"
+    note: "Verifica incrociata voce per voce sul BOM: la fa compliance-safety."
+
+  - id: pay-a-field-efficacy
+    role: payload-fluidics
+    gate: "4"
+    criterio: ">=20 eventi reali, allontanamento entro 5 s in >=80% dei casi"
+    metric: {name: percentuale_successo, op: ">=", target: 80, unit: "%"}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-field-efficacy"
+
+  - id: pay-b-suction
+    role: payload-fluidics
+    gate: "6"
+    criterio: "Velocita' di aspirazione >=2,0 m/s a 25 cm, sull'asse e a +-10 cm"
+    metric: {name: v_aspirazione_ms, op: ">=", target: 2.0, unit: m/s}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-suction"
+    requires: ["anemometro"]
+
+  - id: pay-b-thermal-lure
+    role: payload-fluidics
+    gate: "6"
+    criterio: "Esca termica 35 +-1 gradi per >=8 h; protezione hardware a <=45 gradi, 3 prove"
+    metric: {name: temperatura_c, op: "in", target: [34, 36], unit: C}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-thermal-lure"
+
+  - id: pay-b-co2
+    role: payload-fluidics
+    gate: "6"
+    criterio: "CO2 200-500 ml/min stabile per >=8 h, con confronto cartuccia vs fermentazione"
+    metric: {name: portata_ml_min, op: "in", target: [200, 500], unit: ml/min}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-co2"
+
+  - id: pay-b-catch-ratio
+    role: payload-fluidics
+    gate: "6"
+    criterio: ">=10 notti, catture con esca attiva vs spenta, rapporto >=3:1"
+    metric: {name: rapporto_catture, op: ">=", target: 3.0, unit: "x"}
+    kind: bench
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-catch-ratio"
+
+  - id: pay-b-fan-spectrum
+    role: payload-fluidics
+    gate: "6"
+    criterio: "Spettro ventola misurato e consegnato ad acoustic-perception, overlap in dB"
+    metric: {name: consegna, op: "==", target: 1, unit: documento}
+    kind: ci
+    status: implemented
+    command: ".venv/bin/python scripts/measure/check_artifact.py docs/interfaces/spettro-ventola-unita-b.md"
+
+  # ------------------------------------------------------ compliance-safety ---
+  - id: cmp-certificates
+    role: compliance-safety
+    gate: "4/6"
+    criterio: "100% dei componenti in pressione, batteria e BMS con certificato registrato"
+    metric: {name: voci_senza_certificato, op: "==", target: 0, unit: voci}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/bom_compliance.py --require-certificates"
+
+  - id: cmp-open-items
+    role: compliance-safety
+    gate: "4/6"
+    criterio: "0 voci 'da verificare' aperte nel dossier al gate"
+    metric: {name: voci_aperte, op: "==", target: 0, unit: voci}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/bom_compliance.py --count-open"
+
+  - id: cmp-municipal
+    role: compliance-safety
+    gate: "4"
+    criterio: "Regolamento comunale chiuso con estremi dell'atto citati in SAFETY.md §2"
+    metric: {name: estremi_atto_presenti, op: "==", target: 1, unit: riferimento}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/bom_compliance.py --check-municipal"
+
+  - id: cmp-fmea
+    role: compliance-safety
+    gate: "4/6"
+    criterio: "Ogni modo di guasto ha protezione hardware documentata o accettazione scritta"
+    metric: {name: modi_senza_riga, op: "==", target: 0, unit: modi}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/bom_compliance.py --check-fmea"
+
+  - id: cmp-pr-note
+    role: compliance-safety
+    gate: "PR"
+    criterio: "0 pull request sul payload chiuse senza nota di conformita'"
+    metric: {name: pr_senza_nota, op: "==", target: 0, unit: PR}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/check_compliance_gate.py --diff origin/main HEAD"
+
+  - id: cmp-private-material
+    role: compliance-safety
+    gate: "sempre"
+    criterio: "0 mappe SLAM, riprese di interni, audio con voce o credenziali nella history"
+    metric: {name: file_privati_in_history, op: "==", target: 0, unit: file}
+    kind: ci
+    status: implemented
+    command: "scripts/ci/check_history_private.sh"
+
+  # ------------------------------------------------------------- design-docs --
+  - id: doc-third-party-test
+    role: design-docs
+    gate: "modulo"
+    criterio: ">=2 terzi assemblano il modulo con la sola documentazione, 0 domande, <=2 h"
+    metric: {name: domande_poste, op: "==", target: 0, unit: domande}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio doc-third-party-test"
+    blocked_by: >-
+      Soggetti del test non ancora individuati (PROJECT.md §10). Il comando
+      raccoglie e valida il verbale, ma non puo' produrre i soggetti.
+
+  - id: doc-wiring-completeness
+    role: design-docs
+    gate: "modulo"
+    criterio: "100% dei collegamenti di §5 rappresentati con connettore, sezione e polarita'"
+    metric: {name: collegamenti_mancanti, op: "==", target: 0, unit: collegamenti}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/docs_completeness.py --wiring"
+
+  - id: doc-part-sheets
+    role: design-docs
+    gate: "modulo"
+    criterio: "100% dei pezzi stampati con materiale, orientamento, supporti e variante"
+    metric: {name: schede_incomplete, op: "==", target: 0, unit: schede}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/docs_completeness.py --part-sheets"
+    note: "Confronta le schede con la distinta pezzi generata dal CAD (make bom)."
+
+  - id: doc-safety-inline
+    role: design-docs
+    gate: "modulo"
+    criterio: "100% delle prescrizioni di SAFETY.md compaiono nel passo operativo"
+    metric: {name: prescrizioni_mancanti, op: "==", target: 0, unit: prescrizioni}
+    kind: ci
+    status: stub
+    command: ".venv/bin/python scripts/measure/docs_completeness.py --safety-inline"
+
+  - id: doc-greyscale
+    role: design-docs
+    gate: "modulo"
+    criterio: "Ogni stato distinguibile senza colore: 0 ambiguita' in scala di grigi"
+    metric: {name: ambiguita, op: "==", target: 0, unit: ambiguita}
+    kind: manual
+    status: stub
+    command: ".venv/bin/python scripts/measure/record.py --criterio doc-greyscale"
