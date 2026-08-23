@@ -399,19 +399,19 @@ footer a{color:var(--tx-2)}
       </div>
       <div class="stamp">
         <span class="state">Definizione architettura</span>
-        <span class="mono">PROJECT.md v0.5 · <span id="doc-date">23 ago 2026</span></span>
+        <span class="mono">PROJECT.md v0.8 · <span id="doc-date">23 ago 2026</span></span>
         <span class="mono">main · ef9ef44</span>
       </div>
     </div>
     <div class="kpis">
       <div class="kpi"><div class="n">0<small>/9</small></div><div class="l">Fasi completate</div></div>
       <div class="kpi"><div class="n">0<small>/8</small></div><div class="l">Moduli consegnati</div></div>
-      <div class="kpi"><div class="n" id="kpi-dec">15</div><div class="l">Decisioni registrate</div></div>
-      <div class="kpi alert"><div class="n">14</div><div class="l">Questioni aperte</div></div>
+      <div class="kpi"><div class="n" id="kpi-dec">28</div><div class="l">Decisioni registrate</div></div>
+      <div class="kpi alert"><div class="n">20</div><div class="l">Questioni aperte</div></div>
       <div class="kpi"><div class="n" id="kpi-crew">—</div><div class="l">Agenti in squadra</div></div>
       <div class="kpi"><div class="n">~2,9k<small>&nbsp;€</small></div><div class="l">Capitale previsto</div></div>
-      <div class="kpi"><div class="n">750<small>k/g</small></div><div class="l">Budget token</div></div>
-      <div class="kpi alert"><div class="n">13<small>&nbsp;gg</small></div><div class="l">Margine stagionale</div></div>
+      <div class="kpi"><div class="n">5,25<small>M/sett</small></div><div class="l">Monte token</div></div>
+      <div class="kpi alert"><div class="n">12<small>&nbsp;gg</small></div><div class="l">Margine stagionale</div></div>
     </div>
   </div>
 
@@ -554,11 +554,11 @@ footer a{color:var(--tx-2)}
     <div class="card"><div class="money">
       <div class="cur">
         <div class="h"><b>Token</b></div>
-        <div class="big">83.366<small style="font-size:14px;color:var(--tx-3)"> / 750.000</small></div>
+        <div class="big">436k<small style="font-size:14px;color:var(--tx-3)"> / 5,25M</small></div>
         <div class="gauge" role="img" aria-label="11% del budget giornaliero misurato, resto non rilevato">
-          <i class="used" style="width:11.1%"></i><i class="deb" style="width:18%"></i>
+          <i class="used" style="width:8.3%"></i><i class="deb" style="width:22%"></i>
         </div>
-        <div class="sm">Budget <b>750k/giorno</b>, non cumulabile. Misurato solo il Chief Engineer; due voci del giorno non rilevate — tratteggio.</div>
+        <div class="sm">Monte <b>settimanale</b> dal 24/08: dentro la settimana si sposta liberamente. Misurati i soli agenti; la sessione principale non è rilevata — tratteggio.</div>
       </div>
       <div class="cur">
         <div class="h"><b>Euro</b></div>
@@ -568,7 +568,7 @@ footer a{color:var(--tx-2)}
       </div>
       <div class="cur warn">
         <div class="h"><b>Calendario</b></div>
-        <div class="big">~5 sett.</div>
+        <div class="big">12 gg</div>
         <div class="sm">Alla chiusura della finestra stagionale delle zanzare. Non si compra con nessuna delle altre due: se scade, la fase 5 slitta di un anno.</div>
       </div>
     </div></div>
@@ -676,6 +676,20 @@ const DLOG=[
  ["D-14","Il <b>payload fluidico di entrambe le unità</b> è di un ruolo unico trasversale, non diviso fra i due equipaggi","È la stessa fisica — getto libero, flusso di cattura e pennacchio dell'esca sono lo stesso mestiere, e diviso in due verrebbe imparato due volte e male. Concentra i rischi più seri (5 bar, CO₂, resistenza accesa di notte): duplicare la competenza sugli apparecchi in pressione significa diluirla. E il numero che governa l'Unità A è fluidodinamico, non meccanico. <b>Costo accettato:</b> è l'unico specialista che attraversa entrambe le unità, quindi un potenziale collo di bottiglia fra le catene parallele."]
 ,
  ["D-15","Squadra estesa a <b>otto agenti</b> con <code>software-platform</code> e <code>design-docs</code> — richiesti come «un CTO» e «un grafico», rifiutati in quella forma e non nella sostanza","Un CTO si sarebbe sovrapposto quasi interamente al chief-engineer, che già possiede architettura, confini, misura e Decision Log: due proprietari della stessa cosa significa nessun proprietario. La parte che non si sovrappone — strategia, budget, buy-vs-build — è dello <b>sponsor</b>, non di un agente. Il «grafico» avrebbe trasformato in decorazione un deliverable che in open hardware è funzionale: è la documentazione a decidere se il progetto è replicabile o soltanto pubblicato."]
+,
+ ["D-16","Agente <code>retrospective</code>: propone emendamenti ai mandati ma <b>non li applica</b>","Chi ha scritto i mandati non può essere l'unico giudice di quelli che lo riguardano. Le proposte sul mandato del chief-engineer non passano da lui ma dallo sponsor, per una via che lui non controlla."],
+ ["D-17","Normativa aggiornata alla <b>L. 82/2025</b>, in vigore dal 1º luglio 2025","Il progetto citava il testo previgente. Art. 544-bis ora 6 mesi–3 anni + multa 5.000–30.000 €. E muta il bene tutelato: non più il «sentimento» umano ma l'animale come essere senziente, il che indebolisce ogni difesa fondata sull'assenza di offesa percepita."],
+ ["D-18","<b>Art. 674 c.p.</b> vincola la <b>direzione</b> ammessa del getto, non solo l'intensità","Un getto da balcone che raggiunga la via o il vicino ricade letteralmente nel «getto pericoloso di cose». Diventa un requisito del CAD della testa, non una postilla legale."],
+ ["D-19","Settore del pan-tilt limitato da <b>arresti meccanici</b>, non software","Un limite in un file di configurazione non è una protezione: un arresto meccanico è una legge fisica."],
+ ["D-20","Caricabatterie <b>fisicamente incapace</b> di superare 14,6 V","Il BMS è la seconda protezione, non la prima, su un dispositivo che carica di notte in casa incustodito."],
+ ["D-21","Serbatoio <b>fuori PED e fuori D.M. 329/2004</b>: la marcatura CE non va pretesa","PS·V = 10 bar·L, sotto la soglia dei 50. Pretendere un documento non dovuto significa cercare ciò che non esiste: va preteso il datasheet. Non è però innocuo — 1,2–2,2 kJ immagazzinati."],
+ ["D-22","Base mobile a <b>2 motrici + 2 pazze + pattino anteriore</b> non portante","§4.3 conteneva un numero che nessuno aveva mai scritto: si assumeva un braccio di stabilità di 150 mm guardando la carreggiata, ma il poligono è un triangolo e il braccio reale era 76 mm. Un numero non scritto non può essere contestato. Il quarto punto lo porta a 115 mm per 10 €."],
+ ["D-23","Ribaltamento di accettazione a <b>22°, non 30°</b>, con protezione a tre elementi","I 30° «da manuale» sarebbero stati violati in silenzio. Angolo ≥22° misurato + cutoff inerziale a 20° in 200 ms + massa in quota ≤1,10 kg."],
+ ["D-24","<b>Coppia di stallo ≥2,0 N·m</b> per ruota: il 30:1 del BOM è sottodimensionato","33 N di trazione contro i 51 richiesti per scavalcare una soglia da 15 mm. Corregge §5.4: da 30:1 a ~70:1."],
+ ["D-25","IMU <b>senza magnetometro</b> (game rotation vector)","Evita la calibrazione hard/soft iron in un ambiente domestico pieno di ferro. L'imbardata si fonde con l'odometria."],
+ ["D-26","Payload dell'Unità B <b>alimentato dal dock</b>, ciclo 45/45 min","Cattura anche mentre carica. Il dimensionamento della batteria per la notte cade: <b>−1,7 kg e −180 €</b>. La batteria diventa l'unica zavorra utile del progetto."],
+ ["D-27","<b>Quarto sensore ToF</b> in cima al montante, +15 €","Fra 400 e 1150 mm non guardava nessun sensore: il montante colpisce i piani dei tavoli mentre la base ci passa sotto."],
+ ["D-28","<b>Blocco unidirezionale</b> sui contatti di carica lato robot","Modo di guasto non censito: i pin del robot restano in tensione quando è fuori dal dock, e un oggetto metallico cortocircuita direttamente il pacco 4S 10 Ah."]
 ];
 const BLOCK=[
  ["Finestra stagionale del dataset zanzare","In Italia le zanzare sono attive da maggio a settembre/ottobre. Oggi è il 23 agosto: se la raccolta non parte entro poche settimane, la fase 5 slitta di <b>un anno intero</b>, non di qualche settimana.","Slittamento 1 anno",2],
@@ -691,6 +705,14 @@ const BLOCK=[
  ["Regolamento comunale sui dissuasori","Può essere più restrittivo della norma nazionale.","Chiude F4",0],
  ["Svuotamento della camera di raccolta","Nessuna soluzione ancora ipotizzata.","Blocca F6",0],
  ["Strategia di raccolta dataset zanzare","Subordinata alla finestra stagionale qui sopra.","Blocca F5",0]
+,
+ ["Rilievo dell'abitazione","Luce delle porte, soglie, pavimenti, e soprattutto <b>specchi e vetrate</b>: sono la causa nota di fallimento del LIDAR. Senza, i criteri della fase 7 non sono pianificabili.","Blocca F7",1],
+ ["Accettare il rischio di ribaltamento, o rinunciare al montante","530–900 g di spinta a 1,15 m rovesciano il robot. Verificato con calcolo indipendente. Non esiste una terza via.","Blocca il telaio",2],
+ ["In quale stanza va il dock","Con D-26 il payload cattura mentre carica: metà delle ore di cattura avvengono lì. È una scelta funzionale, non logistica.","Blocca F6-F7",1],
+ ["Quanto pacco batteria conviene","La domanda è cambiata con D-26: non più «quante ore di autonomia» ma quanto conviene, perché la batteria è diventata l'unica zavorra utile.","Blocca F7",1],
+ ["FM-B13: contatti del robot in tensione fuori dal dock","Modo di guasto non censito in SAFETY.md §7.2. Un oggetto metallico cortocircuita il pacco 4S 10 Ah.","Da assegnare",0],
+ ["Modi di guasto del ciclo in dock","D-26 crea uno scenario che la tabella attuale non contempla: esca a 35 °C, ventola e CO₂ attive in carica, incustodite.","Rivalutare",0],
+ ["Soglia di dissuasione: resta non confermata","L'intervallo 8–25 m/s non ha riscontro in letteratura, e payload-fluidics è bloccato dai safeguard su questo tema.","Stima, non dato",0]
 ];
 const BOM=[["Stampante+accessori",975],["BOM: attuazione",310],["Strumenti di misura",513],["Materiali (progetto)",375],["BOM: sensori",198],["BOM: calcolo",190],["BOM: alimentazione",155],["BOM: visione",140]];
 
@@ -802,22 +824,27 @@ draw();
 /* ============ BOARD ============ */
 const COLS=[["backlog","Backlog"],["pronto","Pronto"],["corso","In corso"],["verifica","In verifica"],["fatto","Fatto"]];
 const TK=[
- {c:"corso",t:"Agente <code>retrospective</code> — miglioramento continuo dei mandati",o:"chief-engineer",u:"x"},
- {c:"corso",t:"Dossier di conformità: L.157/1992, apparecchi in pressione, privacy",o:"compliance-safety",u:"x",b:"Serve il comune dell'installazione"},
+ {c:"fatto",t:"Arbitrato delle contestazioni di autonomy: D-22…D-28",o:"chief-engineer",u:"x"},
+ {c:"fatto",t:"Registro di protocollo: 8 atti, impronte verificate in CI",o:"coordinamento",u:"x"},
+ {c:"fatto",t:"CI riparata: la regola sui segreti segnalava il proprio file di test",o:"coordinamento",u:"x"},
+ {c:"fatto",t:"Dossier di conformità: 2 gate negati, 30 voci aperte",o:"compliance-safety",u:"x"},
+ {c:"pronto",t:"FM-B13 e rivalutazione dei modi di guasto per il ciclo in dock (D-26)",o:"compliance-safety",u:"x"},
 
  {c:"verifica",t:"Catena di registrazione notturna: registratore, spettro, indice del dataset",o:"acoustic-perception",u:"b",b:"Va provata su una notte vera"},
  {c:"verifica",t:"Scheletro workspace ROS 2, CI, harness dei criteri di FATTO, contratto MQTT",o:"software-platform",u:"x",b:"Riproducibilità non verificabile su macOS"},
 
  {c:"pronto",t:"Istruttoria getto d'aria contro nebulizzazione",o:"payload-fluidics",u:"a",b:"Da rilanciare: bloccato dai safeguard API"},
- {c:"pronto",t:"Vincoli di baricentro e ingombro da consegnare a mechatronics",o:"autonomy",u:"b"},
+ {c:"fatto",t:"Vincoli meccanici del telaio consegnati, con 3 contestazioni",o:"autonomy",u:"b"},
  {c:"pronto",t:"<b>Installare git-lfs</b> — brew install git-lfs && git lfs install",o:"SPONSOR",u:"you",b:"Blocca il primo export CAD"},
 
  {c:"backlog",t:"<b>Ordinare il microfono di misura</b> (UMIK-1, con fattura)",o:"SPONSOR",u:"you",b:"⏳ Scade il 05/09 — poi la fase 5 slitta di 12 mesi"},
  {c:"backlog",t:"Prima notte di registrazione",o:"acoustic + sponsor",u:"b",b:"Attende il microfono"},
  {c:"backlog",t:"<b>Ordinare stampante e filamenti</b>",o:"SPONSOR",u:"you",b:"Blocca tutta la catena fisica"},
  {c:"backlog",t:"Taratura profili ASA, PETG, PLA + test interfaccia D-11",o:"mechatronics",u:"x",b:"Attende la stampante"},
- {c:"backlog",t:"CAD della testa pan-tilt",o:"mechatronics",u:"a",b:"Attende: rete o autonoma? da quale modulo partire?"},
- {c:"backlog",t:"<b>Decidere: rete o autonoma; da quale modulo CAD partire; getto o nebulizzazione</b>",o:"SPONSOR",u:"you",b:"Bloccano F1 e F4"},
+ {c:"pronto",t:"CAD della testa pan-tilt — i vincoli ci sono tutti",o:"mechatronics",u:"a",b:"Attende: rete o autonoma? da quale modulo partire?"},
+ {c:"pronto",t:"<b>Decidere: rete o autonoma; da quale modulo CAD partire; getto o nebulizzazione</b>",o:"SPONSOR",u:"you",b:"Bloccano F1 e F4"},
+ {c:"pronto",t:"<b>Accettare il rischio di ribaltamento o rinunciare al montante da 120 cm</b>",o:"SPONSOR",u:"you",b:"530–900 g di spinta lo rovesciano. Non esiste una terza via"},
+ {c:"pronto",t:"<b>In quale stanza va il dock</b>",o:"SPONSOR",u:"you",b:"Con D-26 metà delle ore di cattura avvengono lì"},
  {c:"backlog",t:"Strumenti di misura da aggiungere al BOM",o:"chief-engineer",u:"x",b:"Senza, nessun gate può chiudere"},
  {c:"backlog",t:"Detection piccioni su Hailo",o:"vision-perception",u:"a",b:"Attende hardware"},
 
@@ -902,7 +929,7 @@ document.getElementById("standup").innerHTML=SU.map(s=>
 
 
 /* ============ BURNDOWN ============ */
-const SERIE=[{d:"2026-08-23",aperte:15}];      // alimentata dal rapporto mattutino
+const SERIE=[{d:"2026-08-23",aperte:15},{d:"2026-08-24",aperte:19}];      // alimentata dal rapporto mattutino
 const INIZIO=new Date("2026-08-23"), FINE=new Date("2026-09-05");
 (function(){
   const W=720,H=250,ML=42,MR=16,MT=14,MB=34;
