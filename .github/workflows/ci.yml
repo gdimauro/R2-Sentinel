@@ -48,6 +48,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Registro di protocollo — immutabilità dei verbali
+        run: python3 scripts/ci/check_verbali.py
+
       - name: Dipendenze di piattaforma
         run: pip install -q PyYAML
 
