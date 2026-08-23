@@ -31,3 +31,6 @@ datasets/
 
 # Strumenti locali
 .tokensave/
+
+# Media del giornale — grandi e binari, fuori dal repository
+docs/journal/media/
