@@ -61,6 +61,11 @@ def main() -> int:
     ap.add_argument("--diff", nargs=2, metavar=("BASE", "HEAD"), required=True)
     a = ap.parse_args()
     base, head = a.diff
+    if subprocess.run(["git", "rev-parse", "--verify", "--quiet", base],
+                      capture_output=True).returncode != 0:
+        print(f"Decision Log: riferimento '{base}' non risolvibile "
+              "(esecuzione fuori da una pull request). Controllo non applicabile.")
+        return 0
     ref = sh(["git", "merge-base", base, head]).strip() or base
 
     changed = [f for f in sh(

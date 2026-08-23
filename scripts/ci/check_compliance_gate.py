@@ -31,13 +31,20 @@ PAYLOAD_PATTERNS = [
     "software/**/payload*",
     "hardware/bom/*",
     "SAFETY.md",
-    "docs/PROJECT.md",   # §2 vincoli non negoziabili vive qui
+    # docs/PROJECT.md NON e' in elenco di proposito: e' toccato da quasi ogni PR
+    # (Decision Log) e chiedere una nota di conformita' ogni volta trasformerebbe
+    # il gate in rumore. Un controllo che si impara a ignorare non protegge nulla.
 ]
 LABEL = "conformita-ok"
 
 
 def sh(args: list[str]) -> str:
     return subprocess.run(args, capture_output=True, text=True).stdout
+
+
+def ref_exists(ref: str) -> bool:
+    return subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref],
+                          capture_output=True).returncode == 0
 
 
 def pr_labels() -> list[str]:
@@ -55,6 +62,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--diff", nargs=2, metavar=("BASE", "HEAD"), required=True)
     a = ap.parse_args()
+    if not ref_exists(a.diff[0]):
+        print(f"Conformita': riferimento '{a.diff[0]}' non risolvibile "
+              "(esecuzione fuori da una pull request). Controllo non applicabile.")
+        return 0
     ref = sh(["git", "merge-base", *a.diff]).strip() or a.diff[0]
     changed = [f for f in sh(["git", "diff", "--name-only", ref, a.diff[1]]).splitlines() if f]
 

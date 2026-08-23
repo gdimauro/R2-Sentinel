@@ -207,6 +207,39 @@ tfoot td{border-top:1px solid var(--line); font-weight:600; border-bottom:0}
 
 
 
+
+/* ---------- tab ---------- */
+.tabs{
+  display:flex; gap:2px; flex-wrap:wrap; border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:20; background:var(--bg); padding-top:2px;
+  margin-bottom:-8px;
+}
+.tab{
+  appearance:none; border:1px solid transparent; border-bottom:0; background:none;
+  font-family:"Saira Condensed","IBM Plex Sans",sans-serif; font-size:15px; font-weight:600;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--tx-3);
+  padding:10px 16px 9px; cursor:pointer; border-radius:3px 3px 0 0;
+  display:inline-flex; align-items:center; gap:7px; margin-bottom:-1px;
+}
+.tab:hover{color:var(--tx)}
+.tab[aria-selected="true"]{
+  background:var(--panel); border-color:var(--line); color:var(--tx);
+  border-bottom:1px solid var(--panel);
+}
+.tab:focus-visible{outline:2px solid var(--tx-2); outline-offset:-2px}
+.badge{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:600; letter-spacing:0;
+  padding:2px 6px; border-radius:9px; background:var(--panel-2); color:var(--tx-3);
+  border:1px solid var(--line-soft); min-width:20px; text-align:center;
+}
+.badge.hot{background:var(--stop); color:#fff; border-color:var(--stop)}
+.panel{display:flex; flex-direction:column; gap:26px; padding-top:26px}
+.panel[hidden]{display:none}
+@media (max-width:640px){
+  .tab{font-size:13px; padding:9px 11px}
+  .tabs{gap:0}
+}
+
 /* ---------- board ---------- */
 .sprint{display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:15px 20px; border-bottom:1px solid var(--line-soft)}
 .sprint .goal{flex:1 1 300px; min-width:0}
@@ -310,7 +343,6 @@ footer a{color:var(--tx-2)}
 <body>
 <div class="wrap">
 
-  <!-- =============== BARRA DI STATO =============== -->
   <div class="bridge">
     <div class="bridge-top">
       <div class="bridge-id">
@@ -336,7 +368,26 @@ footer a{color:var(--tx-2)}
     </div>
   </div>
 
-  <!-- =============== DUE CANALI =============== -->
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="tabs" role="tablist" aria-label="Sezioni del sinottico">
+    <button class="tab" role="tab" id="tab-stato" aria-controls="pan-stato" aria-selected="true" tabindex="0">Stato<span class="badge" id="bdg-stato"></span></button>
+    <button class="tab" role="tab" id="tab-board" aria-controls="pan-board" aria-selected="false" tabindex="-1">Board<span class="badge" id="bdg-board"></span></button>
+    <button class="tab" role="tab" id="tab-squadra" aria-controls="pan-squadra" aria-selected="false" tabindex="-1">Squadra<span class="badge" id="bdg-squadra"></span></button>
+    <button class="tab" role="tab" id="tab-conti" aria-controls="pan-conti" aria-selected="false" tabindex="-1">Conti<span class="badge" id="bdg-conti"></span></button>
+    <button class="tab" role="tab" id="tab-decisioni" aria-controls="pan-decisioni" aria-selected="false" tabindex="-1">Decisioni<span class="badge" id="bdg-decisioni"></span></button>
+  </div>
+  <div class="panel" role="tabpanel" id="pan-stato" aria-labelledby="tab-stato">
   <section>
     <div class="sec-head">
       <h2>Le due unità</h2>
@@ -377,8 +428,6 @@ footer a{color:var(--tx-2)}
       </div>
     </div>
   </section>
-
-  <!-- =============== ROADMAP =============== -->
   <section>
     <div class="sec-head">
       <h2>Roadmap</h2>
@@ -386,51 +435,8 @@ footer a{color:var(--tx-2)}
     </div>
     <div class="card phases" id="phases"></div>
   </section>
-
-  <!-- =============== SQUADRA =============== -->
-  <section id="crew-section">
-    <div class="sec-head">
-      <h2>Squadra</h2>
-      <span class="note">Definita dal Chief Engineer a partire dalla decomposizione del sistema.</span>
-    </div>
-    <div class="crew" id="crew"></div>
-  </section>
-
-  <!-- =============== BLOCCANTI =============== -->
-  <section>
-    <div class="sec-head">
-      <h2>Questioni aperte</h2>
-      <span class="note">Ciò che non è deciso blocca chi deve iniziare.</span>
-    </div>
-    <div class="card"><div class="blockers" id="blockers"></div></div>
-  </section>
-
-  <!-- =============== DECISION LOG =============== -->
-  <section>
-    <div class="sec-head">
-      <h2>Decision Log</h2>
-      <span class="note">Ogni scelta con il suo perché — è la parte che serve fra sei mesi.</span>
-    </div>
-    <div class="card scroll">
-      <table>
-        <thead><tr><th style="width:52px">ID</th><th>Decisione e motivazione</th><th style="width:96px">Data</th></tr></thead>
-        <tbody id="dlog"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- =============== CAPITALE =============== -->
-  <section>
-    <div class="sec-head">
-      <h2>Capitale</h2>
-      <span class="note">Capitale previsto ~2.700–3.100 €. Esclusa la event camera opzionale da 3.000 € e il service SLS, da quotare.</span>
-    </div>
-    <div class="card bars" id="bom"></div>
-  </section>
-
-
-
-  <!-- =============== BOARD =============== -->
+  </div>
+  <div class="panel" role="tabpanel" id="pan-board" aria-labelledby="tab-board" hidden>
   <section>
     <div class="sec-head">
       <h2>Board</h2>
@@ -447,8 +453,6 @@ footer a{color:var(--tx-2)}
       <div class="board" id="board"></div>
     </div>
   </section>
-
-  <!-- =============== STANDUP =============== -->
   <section>
     <div class="sec-head">
       <h2>Standup</h2>
@@ -456,8 +460,17 @@ footer a{color:var(--tx-2)}
     </div>
     <div class="card stand" id="standup"></div>
   </section>
-
-  <!-- =============== CONTABILITÀ =============== -->
+  </div>
+  <div class="panel" role="tabpanel" id="pan-squadra" aria-labelledby="tab-squadra" hidden>
+  <section id="crew-section">
+    <div class="sec-head">
+      <h2>Squadra</h2>
+      <span class="note">Definita dal Chief Engineer a partire dalla decomposizione del sistema.</span>
+    </div>
+    <div class="crew" id="crew"></div>
+  </section>
+  </div>
+  <div class="panel" role="tabpanel" id="pan-conti" aria-labelledby="tab-conti" hidden>
   <section>
     <div class="sec-head">
       <h2>Contabilità</h2>
@@ -485,8 +498,13 @@ footer a{color:var(--tx-2)}
       </div>
     </div></div>
   </section>
-
-  <!-- =============== LIBRO GIORNALE =============== -->
+  <section>
+    <div class="sec-head">
+      <h2>Capitale</h2>
+      <span class="note">Capitale previsto ~2.700–3.100 €. Esclusa la event camera opzionale da 3.000 € e il service SLS, da quotare.</span>
+    </div>
+    <div class="card bars" id="bom"></div>
+  </section>
   <section>
     <div class="sec-head">
       <h2>Libro giornale</h2>
@@ -513,6 +531,28 @@ footer a{color:var(--tx-2)}
       <div class="empty" id="none" hidden>Nessuna voce corrisponde ai filtri.</div>
     </div>
   </section>
+  </div>
+  <div class="panel" role="tabpanel" id="pan-decisioni" aria-labelledby="tab-decisioni" hidden>
+  <section>
+    <div class="sec-head">
+      <h2>Questioni aperte</h2>
+      <span class="note">Ciò che non è deciso blocca chi deve iniziare.</span>
+    </div>
+    <div class="card"><div class="blockers" id="blockers"></div></div>
+  </section>
+  <section>
+    <div class="sec-head">
+      <h2>Decision Log</h2>
+      <span class="note">Ogni scelta con il suo perché — è la parte che serve fra sei mesi.</span>
+    </div>
+    <div class="card scroll">
+      <table>
+        <thead><tr><th style="width:52px">ID</th><th>Decisione e motivazione</th><th style="width:96px">Data</th></tr></thead>
+        <tbody id="dlog"></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
 
   <footer>
     <span>Sorgente di verità: <span class="mono">docs/PROJECT.md</span> — questo sinottico ne è il riflesso, non il sostituto.</span>
@@ -744,6 +784,45 @@ document.getElementById("standup").innerHTML=SU.map(s=>
      <div class="bk"><b style="color:var(--tx-3)">Bloccato da</b>${s.k}</div>
    </div>
  </div>`).join("");
+
+
+/* ============ TAB ============ */
+(function(){
+  const tabs=[...document.querySelectorAll('.tab')];
+  const sel=(t)=>{
+    tabs.forEach(x=>{
+      const on = x===t;
+      x.setAttribute('aria-selected', on?'true':'false');
+      x.tabIndex = on?0:-1;
+      document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+    });
+    try{ localStorage.setItem('r2s-tab', t.id); }catch(e){}
+  };
+  tabs.forEach(t=>t.addEventListener('click',()=>sel(t)));
+  document.querySelector('.tabs').addEventListener('keydown',e=>{
+    const i=tabs.indexOf(document.activeElement); if(i<0) return;
+    let j=null;
+    if(e.key==='ArrowRight') j=(i+1)%tabs.length;
+    else if(e.key==='ArrowLeft') j=(i-1+tabs.length)%tabs.length;
+    else if(e.key==='Home') j=0;
+    else if(e.key==='End') j=tabs.length-1;
+    if(j!==null){ e.preventDefault(); tabs[j].focus(); sel(tabs[j]); }
+  });
+  // conteggi sui tab
+  const n=(s)=>document.querySelectorAll(s).length;
+  const set=(id,v,hot)=>{const b=document.getElementById(id); if(!b)return;
+    b.textContent=v; if(hot) b.classList.add('hot');};
+  set('bdg-board', n('.tk')-n('.col.done .tk'));
+  set('bdg-squadra', n('.agent'));
+  set('bdg-conti', n('#led tr'));
+  set('bdg-decisioni', n('#blockers .blk'), true);
+  set('bdg-stato', '0/9');
+  try{
+    const saved=localStorage.getItem('r2s-tab');
+    const t=saved&&document.getElementById(saved);
+    if(t) sel(t);
+  }catch(e){}
+})();
 
 </script>
 

@@ -1,0 +1,7 @@
+# Deroghe ai controlli di igiene. Formato:
+#   <glob>    <motivo, almeno 10 caratteri>
+#
+# Una deroga senza motivo viene rifiutata dallo script: e' un buco, non
+# un'eccezione. Ogni riga qui dentro va rivista quando il motivo decade.
+#
+# Al momento: nessuna deroga attiva. E' la condizione giusta.

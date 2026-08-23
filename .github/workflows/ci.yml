@@ -1,0 +1,210 @@
+# =============================================================================
+# CI di R2-Sentinel — budget: <= 10 min per PR.
+#
+# Struttura in tre livelli, dal piu' veloce al piu' lento, perche' un errore di
+# igiene deve arrivare in 60 secondi e non dopo la build di ROS:
+#   1. hygiene        (~1 min)  igiene del diff, gate 0, Decision Log, conformita'
+#   2. host-tests     (~2 min)  test che non richiedono ne' ROS ne' hardware
+#   3. ros2-build     (~6 min)  build + test del workspace, in container
+#   4. firmware       (~5 min)  compilazione ESP-IDF, in parallelo
+#
+# Cosa NON gira qui: tutto cio' che richiede Hailo, LIDAR, ESP32 fisico,
+# anemometro o microfono. Quei test sono marcati `bench` e vengono SALTATI in
+# modo esplicito: il report dice che non sono stati eseguiti, non finge.
+# =============================================================================
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+
+  # ---------------------------------------------------------------- igiene --
+  hygiene:
+    name: Igiene del diff (gate 0, privacy, credenziali)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # serve la history per il diff e per lo scan
+          lfs: false            # NON scaricare gli oggetti: qui verifichiamo i puntatori
+
+      - name: Installa git-lfs (per la verifica del gate 0)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq git-lfs && git lfs install
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dipendenze di piattaforma
+        run: pip install -q PyYAML
+
+      - name: Gate 0 — Git LFS operativo e nessun export CAD grezzo
+        run: ./scripts/ci/check_lfs.sh --prove
+
+      - name: Igiene del diff (pesi, dataset, mappe SLAM, audio, credenziali, CAD)
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/ci/check_hygiene.py \
+            --diff origin/${{ github.base_ref }} ${{ github.sha }}
+
+      - name: Igiene dell'intero worktree (su push)
+        if: github.event_name != 'pull_request'
+        run: python scripts/ci/check_hygiene.py --worktree
+
+      - name: 0 binari > 5 MB nella history fuori da LFS
+        run: ./scripts/ci/check_history_binaries.sh 5
+
+      - name: 0 materiale privato nella history
+        run: ./scripts/ci/check_history_private.sh
+
+      - name: Decision Log aggiornato se l'architettura cambia
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/ci/check_decision_log.py \
+            --diff origin/${{ github.base_ref }} ${{ github.sha }}
+
+      - name: Nota di conformita' come condizione di merge
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/ci/check_compliance_gate.py \
+            --diff origin/${{ github.base_ref }} ${{ github.sha }}
+
+      - name: Schema MQTT — 0 topic non documentati, doc allineata
+        run: |
+          python scripts/ci/check_mqtt_topics.py
+          python scripts/gen/gen_mqtt_docs.py --check
+
+  # ------------------------------------------------------------ test host --
+  host-tests:
+    name: Test senza hardware
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -q -r requirements-dev.txt
+
+      - name: Test di piattaforma (i test da banco vengono SALTATI, non falliti)
+        run: pytest tests/ci tests/bench -q --junit-xml=reports/host-tests.xml
+
+      - name: Lint
+        run: ruff check scripts tests
+
+      - name: Copertura dell'harness dei criteri di FATTO
+        run: ./scripts/fatto.sh --coverage
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-test-host
+          path: reports/
+          if-no-files-found: ignore
+
+  # ----------------------------------------------------------- build ROS 2 --
+  ros2-build:
+    name: Workspace ROS 2 Jazzy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: ros:jazzy-ros-base-noble
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dipendenze dei pacchetti (rosdep)
+        shell: bash
+        run: |
+          set -e
+          apt-get update -qq
+          rosdep update --rosdistro jazzy || true
+          cd software/ros2_ws
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy \
+            || echo "::warning::rosdep non ha risolto tutte le dipendenze"
+
+      - name: Build
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/jazzy/setup.bash
+          cd software/ros2_ws
+          colcon build --symlink-install --event-handlers console_cohesion+
+
+      - name: Test dei pacchetti
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/jazzy/setup.bash
+          cd software/ros2_ws
+          colcon test --event-handlers console_direct+ --return-code-on-test-failure
+
+      - name: I 6 pacchetti r2s_ sono visibili
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source software/ros2_ws/install/setup.bash
+          n=$(ros2 pkg list | grep -c '^r2s_')
+          echo "pacchetti r2s_ trovati: $n"
+          test "$n" -eq 6
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: log-colcon
+          path: software/ros2_ws/log/
+          if-no-files-found: ignore
+
+  # -------------------------------------------------------------- firmware --
+  firmware:
+    name: Firmware ESP32-S3 (compila da zero)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versione ESP-IDF dal file di toolchain
+        id: idf
+        run: echo "version=$(grep '^idf_version:' firmware/toolchain.yaml | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ steps.idf.outputs.version }}
+          target: esp32s3
+          path: firmware/esp32
+
+  # ------------------------------------------------------------- riepilogo --
+  esito:
+    name: Esito complessivo
+    runs-on: ubuntu-24.04
+    needs: [hygiene, host-tests, ros2-build, firmware]
+    if: always()
+    steps:
+      - name: Verdetto
+        run: |
+          echo "igiene:     ${{ needs.hygiene.result }}"
+          echo "test host:  ${{ needs.host-tests.result }}"
+          echo "ROS 2:      ${{ needs.ros2-build.result }}"
+          echo "firmware:   ${{ needs.firmware.result }}"
+          echo
+          echo "Nessun test da banco e' stato eseguito in CI: qui non ci sono"
+          echo "Hailo, LIDAR, ESP32 fisico ne' strumenti di misura."
+          echo "Quelle prove si eseguono con: R2S_BENCH=1 make test-bench"
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ]; then
+            echo "::error::almeno un job e' fallito"
+            exit 1
+          fi

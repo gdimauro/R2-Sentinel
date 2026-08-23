@@ -678,7 +678,14 @@ def main(argv: list[str]) -> int:
                                        "va comunque annotata al risveglio.")
 
     raccogli_metadati_iniziali(ns, meta)
-    percorso_meta = MD.salva(meta)     # salvato SUBITO: un crash lascia traccia
+    if ns.prova:
+        # una prova non deve inquinare l'indice versionato del dataset
+        meta["id_notte"] = "PROVA_" + meta["sessione_id"]
+        percorso_meta = MD.salva(meta, os.path.join(dir_audio,
+                                                    meta["id_notte"] + ".json"))
+        ns.segmento_s = min(ns.segmento_s, 20)   # esercita il segmentatore
+    else:
+        percorso_meta = MD.salva(meta)  # salvato SUBITO: un crash lascia traccia
     _log(f"metadati: {percorso_meta}")
     _log(f"audio:    {dir_audio}/{prefisso}_*.wav")
 
