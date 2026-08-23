@@ -208,6 +208,53 @@ tfoot td{border-top:1px solid var(--line); font-weight:600; border-bottom:0}
 
 
 
+
+/* ---------- burndown ---------- */
+.burn{padding:18px 20px}
+.burn-head{display:flex; gap:14px; flex-wrap:wrap; align-items:baseline; margin-bottom:14px}
+.burn-head b{font-family:"Saira Condensed",sans-serif; font-size:16px; letter-spacing:.03em; text-transform:uppercase}
+.burn-head span{font-size:12.5px; color:var(--tx-2)}
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:11.5px; color:var(--tx-2)}
+.legend i{display:inline-block; width:22px; height:0; border-top-width:2px; margin-right:6px; vertical-align:middle}
+.legend .ideal{border-top:2px dashed var(--tx-3)}
+.legend .reale{border-top:2px solid var(--a)}
+.legend .dl{border-top:2px solid var(--stop)}
+
+/* ---------- cerimonie / chat ---------- */
+.cer{display:flex; flex-direction:column}
+.cer-h{
+  display:flex; gap:12px; align-items:baseline; flex-wrap:wrap;
+  padding:14px 18px; border-bottom:1px solid var(--line-soft); background:var(--panel-2);
+}
+.cer-h b{font-family:"Saira Condensed",sans-serif; font-size:16px; letter-spacing:.04em; text-transform:uppercase}
+.cer-h .when{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--tx-3)}
+.cer-h .why{font-size:12.5px; color:var(--tx-2); margin-left:auto}
+.thread{padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+.msg{display:grid; grid-template-columns:auto 1fr; gap:11px; align-items:start}
+.av{
+  width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600;
+  background:var(--panel-2); border:1px solid var(--line); color:var(--tx-2); flex:none;
+}
+.msg.a .av{background:var(--a-bg); border-color:var(--a-line); color:var(--a)}
+.msg.b .av{background:var(--b-bg); border-color:var(--b-line); color:var(--b)}
+.msg.you .av{background:var(--stop-bg); border-color:var(--stop); color:var(--stop)}
+.msg.ce .av{background:var(--ok-bg); border-color:var(--ok); color:var(--ok)}
+.bub{min-width:0}
+.bub .nm{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; margin-bottom:3px}
+.bub .nm em{font-style:normal; color:var(--tx-3); font-weight:400; margin-left:7px; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase}
+.bub .tx{
+  background:var(--panel-2); border:1px solid var(--line-soft); border-radius:3px;
+  padding:9px 12px; font-size:13px; line-height:1.5;
+}
+.msg.you .bub .tx{background:var(--stop-bg); border-color:var(--stop)}
+.bub .tx code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; background:var(--panel); padding:1px 4px; border-radius:2px}
+.rebut{
+  margin-top:7px; border-left:2px solid var(--stop); padding-left:10px;
+  font-size:12.5px; color:var(--tx-2);
+}
+.rebut b{color:var(--stop); font-size:10px; letter-spacing:.09em; text-transform:uppercase; display:block; margin-bottom:2px}
+
 /* ---------- tab ---------- */
 .tabs{
   display:flex; gap:2px; flex-wrap:wrap; border-bottom:1px solid var(--line);
@@ -383,6 +430,7 @@ footer a{color:var(--tx-2)}
   <div class="tabs" role="tablist" aria-label="Sezioni del sinottico">
     <button class="tab" role="tab" id="tab-stato" aria-controls="pan-stato" aria-selected="true" tabindex="0">Stato<span class="badge" id="bdg-stato"></span></button>
     <button class="tab" role="tab" id="tab-board" aria-controls="pan-board" aria-selected="false" tabindex="-1">Board<span class="badge" id="bdg-board"></span></button>
+    <button class="tab" role="tab" id="tab-cerimonie" aria-controls="pan-cerimonie" aria-selected="false" tabindex="-1">Cerimonie<span class="badge" id="bdg-cerimonie"></span></button>
     <button class="tab" role="tab" id="tab-squadra" aria-controls="pan-squadra" aria-selected="false" tabindex="-1">Squadra<span class="badge" id="bdg-squadra"></span></button>
     <button class="tab" role="tab" id="tab-conti" aria-controls="pan-conti" aria-selected="false" tabindex="-1">Conti<span class="badge" id="bdg-conti"></span></button>
     <button class="tab" role="tab" id="tab-decisioni" aria-controls="pan-decisioni" aria-selected="false" tabindex="-1">Decisioni<span class="badge" id="bdg-decisioni"></span></button>
@@ -439,6 +487,24 @@ footer a{color:var(--tx-2)}
   <div class="panel" role="tabpanel" id="pan-board" aria-labelledby="tab-board" hidden>
   <section>
     <div class="sec-head">
+      <h2>Burndown</h2>
+      <span class="note">Non conta storie: conta ciò che blocca. La linea rossa è la stagione, che non si sposta.</span>
+    </div>
+    <div class="card burn">
+      <div class="burn-head">
+        <b>Verso il 5 settembre</b>
+        <span>Azioni dello sponsor ancora aperte. È l'unica curva che conta finché la finestra stagionale è aperta.</span>
+      </div>
+      <div id="burnsvg"></div>
+      <div class="legend">
+        <span><i class="ideal"></i>Ideale — a zero il 5 settembre</span>
+        <span><i class="reale"></i>Reale</span>
+        <span><i class="dl"></i>Ultimo giorno per iniziare a registrare</span>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="sec-head">
       <h2>Board</h2>
       <span class="note">Lo sprint è il gate, non la settimana. «In verifica» è la colonna che conta: consegnato ≠ misurato.</span>
     </div>
@@ -460,6 +526,15 @@ footer a{color:var(--tx-2)}
     </div>
     <div class="card stand" id="standup"></div>
   </section>
+  </div>
+  <div class="panel" role="tabpanel" id="pan-cerimonie" aria-labelledby="tab-cerimonie" hidden>
+    <section>
+      <div class="sec-head">
+        <h2>Cerimonie</h2>
+        <span class="note">In forma di dialogo: con nove agenti, chi dice una cosa conta quanto la cosa detta.</span>
+      </div>
+      <div id="cerimonie" style="display:flex;flex-direction:column;gap:16px"></div>
+    </section>
   </div>
   <div class="panel" role="tabpanel" id="pan-squadra" aria-labelledby="tab-squadra" hidden>
   <section id="crew-section">
@@ -814,6 +889,7 @@ document.getElementById("standup").innerHTML=SU.map(s=>
     b.textContent=v; if(hot) b.classList.add('hot');};
   set('bdg-board', n('.tk')-n('.col.done .tk'));
   set('bdg-squadra', n('.agent'));
+  set('bdg-cerimonie', n('.cer'));
   set('bdg-conti', n('#led tr'));
   set('bdg-decisioni', n('#blockers .blk'), true);
   set('bdg-stato', '0/9');
@@ -823,6 +899,89 @@ document.getElementById("standup").innerHTML=SU.map(s=>
     if(t) sel(t);
   }catch(e){}
 })();
+
+
+/* ============ BURNDOWN ============ */
+const SERIE=[{d:"2026-08-23",aperte:15}];      // alimentata dal rapporto mattutino
+const INIZIO=new Date("2026-08-23"), FINE=new Date("2026-09-05");
+(function(){
+  const W=720,H=250,ML=42,MR=16,MT=14,MB=34;
+  const gg=Math.round((FINE-INIZIO)/864e5);
+  const y0=Math.max(16, ...SERIE.map(p=>p.aperte));
+  const X=i=>ML+(W-ML-MR)*i/gg, Y=v=>MT+(H-MT-MB)*(1-v/y0);
+  const g=[];
+  for(let v=0;v<=y0;v+=Math.ceil(y0/4)){
+    g.push(`<line x1="${ML}" y1="${Y(v)}" x2="${W-MR}" y2="${Y(v)}" stroke="var(--line-soft)" stroke-width="1"/>`);
+    g.push(`<text x="${ML-8}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--tx-3)" font-family="IBM Plex Mono,monospace">${v}</text>`);
+  }
+  for(let i=0;i<=gg;i+=2){
+    const dt=new Date(INIZIO.getTime()+i*864e5);
+    g.push(`<text x="${X(i)}" y="${H-MB+16}" text-anchor="middle" font-size="10" fill="var(--tx-3)" font-family="IBM Plex Mono,monospace">${dt.getDate()}/${dt.getMonth()+1}</text>`);
+  }
+  const ideale=`<line x1="${X(0)}" y1="${Y(SERIE[0].aperte)}" x2="${X(gg)}" y2="${Y(0)}" stroke="var(--tx-3)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  const pts=SERIE.map(p=>[Math.round((new Date(p.d)-INIZIO)/864e5), p.aperte]);
+  const reale=pts.length>1
+    ? `<polyline points="${pts.map(([i,v])=>X(i)+','+Y(v)).join(' ')}" fill="none" stroke="var(--a)" stroke-width="2.5"/>`
+    : '';
+  const punti=pts.map(([i,v])=>`<circle cx="${X(i)}" cy="${Y(v)}" r="4.5" fill="var(--a)"/>`).join('');
+  const dl=`<line x1="${X(gg)}" y1="${MT}" x2="${X(gg)}" y2="${H-MB}" stroke="var(--stop)" stroke-width="2"/>`
+         + `<text x="${X(gg)-6}" y="${MT+12}" text-anchor="end" font-size="10" font-weight="600" fill="var(--stop)" font-family="IBM Plex Mono,monospace">05/09</text>`;
+  const nota = pts.length<2
+    ? `<text x="${(ML+W-MR)/2}" y="${H/2}" text-anchor="middle" font-size="12" fill="var(--tx-3)">un solo rilevamento: la curva reale appare dal secondo giorno</text>`
+    : '';
+  document.getElementById("burnsvg").innerHTML =
+    `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Burndown delle azioni aperte verso il 5 settembre">${g.join('')}${ideale}${nota}${reale}${punti}${dl}</svg></div>`;
+})();
+
+/* ============ CERIMONIE ============ */
+const CER=[
+ {t:"Standup", d:"2026-08-23 · sera", why:"Nove agenti, sei fermi per la stessa causa",
+  msg:[
+  {w:"chief-engineer",k:"ce",r:"tech lead",x:"Squadra chiusa: otto specialisti più me. D-13, D-14, D-15 registrate. Il payload fluidico resta un ruolo unico trasversale — è la stessa fisica su entrambe le unità e concentra i rischi peggiori."},
+  {w:"acoustic-perception",k:"b",r:"unità B",x:"Registratore, analisi spettrale e indice del dataset consegnati. Non dichiaro il banco pronto: il conteggio campioni mostrava un ammanco del 9% e non l'avevo ancora spiegato."},
+  {w:"claude",k:"ce",r:"coordinamento",x:"Chiuso io: riprodotta la catena con sorgente sintetica a 48 kHz, 60 s, segmenti da 20. <b>2.880.000 campioni esatti, zero perdita.</b> La segmentazione è corretta — l'ammanco è la latenza di apertura del dispositivo, che su una notte da 6 ore vale lo 0,025%.", rebut:"Ma la formula <code>wall − audio</code> confonde l'avvio con le perdite da crash. Va separata prima di fidarsi del dato sul campo."},
+  {w:"software-platform",k:"ce",r:"base",x:"Workspace ROS 2 con sei pacchetti, CI di igiene, harness dei criteri di FATTO, contratto MQTT. Il gate Git LFS resta chiuso: <code>git-lfs</code> non è installato e non lo installo io."},
+  {w:"compliance-safety",k:"ce",r:"verifica",x:"Due gate <b>negati</b>: prova in pressione (certificati 0/16) e installazione Unità A. Trovata una norma superata nel progetto: la L. 82/2025 ha riscritto il Titolo IX-bis dal 1º luglio 2025."},
+  {w:"payload-fluidics",k:"a",r:"unità A",x:"Fermo. Bloccato dai safeguard dell'API sul confronto getto/nebulizzazione: il tema è la soglia di non lesività che la legge impone di calcolare, ma fuori contesto sembra altro. Da riformulare."},
+  {w:"SPONSOR",k:"you",r:"tu",x:"Sei agenti su nove sono fermi per una mia azione: microfono, git-lfs, stampante, comune, e due decisioni di §10. Nessuno è fermo per un problema tecnico."}
+ ]},
+ {t:"Revisione", d:"2026-08-23 · sera", why:"Cosa è misurato davvero",
+  msg:[
+  {w:"chief-engineer",k:"ce",r:"tech lead",x:"Contiamo solo ciò che ha un numero. <b>Gate chiusi: zero.</b> Il lavoro consegnato è in «in verifica», non in «fatto»."},
+  {w:"claude",k:"ce",r:"coordinamento",x:"Una sola misura reale in tutta la giornata: 83.366 token per costruire la squadra, dentro la forchetta 60–100k che avevo stimato. Tutto il resto del libro mastro è stima ed è etichettato come tale."},
+  {w:"compliance-safety",k:"ce",r:"verifica",x:"Registro certificati 0/16. Trenta voci aperte, zero chiuse. Al primo ciclo è il risultato atteso, non un fallimento."}
+ ]},
+ {t:"Retrospettiva", d:"2026-08-23 · sera", why:"Due errori dello stesso tipo in un giorno",
+  msg:[
+  {w:"retrospective",k:"ce",r:"kaizen",x:"Pattern ricorrente, <b>due occorrenze datate</b>. Mattina: il coordinamento accusa il chief-engineer di aver dichiarato lavoro non fatto — stava ancora scrivendo. Sera: <code>compliance-safety</code> dichiara un difetto nel <code>.gitignore</code> — le regole c'erano, le aveva appena scritte <code>software-platform</code>."},
+  {w:"retrospective",k:"ce",r:"kaizen",x:"Causa comune: <b>si legge uno stato transitorio e lo si tratta come definitivo</b>, con più agenti che scrivono in parallelo sugli stessi file. Non è distrazione, è una proprietà del lavoro concorrente.",rebut:"Proposta di emendamento: ogni agente verifica lo stato di un file solo dopo la notifica di completamento di chi lo sta scrivendo, e cita la revisione su cui ha letto. Propongo, non applico."},
+  {w:"claude",k:"ce",r:"coordinamento",x:"Terzo errore, mio e di natura diversa: ho dato una lista d'acquisto senza chiedere il perimetro amministrativo. È bastata la parola «fattura» per far decadere metà dei link migliori. Lezione: chiedere i vincoli di contesto prima di consigliare, non dopo."},
+  {w:"SPONSOR",k:"you",r:"tu",x:"E i materiali di stampa non erano a bilancio: se n'è accorta una persona, non gli otto agenti."}
+ ]},
+ {t:"Pianificazione", d:"Sprint 0 · gate al 05/09", why:"Un solo obiettivo",
+  msg:[
+  {w:"chief-engineer",k:"ce",r:"tech lead",x:"Obiettivo dello sprint: <b>sbloccare il calendario</b>. Non «avanzare sul progetto» — solo ciò che scade. Tutto il resto è rinviabile per definizione."},
+  {w:"claude",k:"ce",r:"coordinamento",x:"Criterio di uscita: prima notte registrata entro il 5 settembre. Servono ~25 notti di calendario per averne 20 utili, e la stagione chiude a fine settembre: il 5 è l'ultimo giorno per <b>iniziare</b>, non per finire."},
+  {w:"acoustic-perception",k:"b",r:"unità B",x:"La catena software è pronta e gira su un portatile con un microfono USB qualsiasi. Non serve aspettare il Raspberry Pi né l'ICS-43434."},
+  {w:"SPONSOR",k:"you",r:"tu",x:"Quindi lo sprint dipende da un ordine da 140 €, non da lavoro tecnico."}
+ ]}
+];
+document.getElementById("cerimonie").innerHTML=CER.map(c=>
+ `<div class="card cer">
+   <div class="cer-h"><b>${c.t}</b><span class="when">${c.d}</span><span class="why">${c.why}</span></div>
+   <div class="thread">${c.msg.map(m=>
+     `<div class="msg ${m.k}">
+        <div class="av">${m.w==="SPONSOR"?"TU":m.w.slice(0,2).toUpperCase()}</div>
+        <div class="bub">
+          <div class="nm">${m.w}<em>${m.r}</em></div>
+          <div class="tx">${m.x}${m.rebut?`<div class="rebut"><b>Obiezione</b>${m.rebut}</div>`:""}</div>
+        </div>
+      </div>`).join("")}</div>
+ </div>`).join("");
+
+
+(function(){const b=document.getElementById('bdg-cerimonie');
+ if(b) b.textContent=document.querySelectorAll('.cer').length;})();
 
 </script>
 

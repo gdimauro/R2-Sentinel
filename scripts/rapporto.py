@@ -103,8 +103,46 @@ Tutti gli acquisti vanno fatti <b>con fattura</b>. Comunica gli estremi e li reg
 </div></div>""")
     return "".join(h)
 
-def invia(html, oggetto):
-    """Passa l'HTML da file: incollarlo nell'AppleScript lo rompe agli apici."""
+def invia_smtp(html, oggetto, allegati=None):
+    """Invio diretto via SMTP. Non dipende da Mail.app, che può restare
+    offline con i messaggi fermi in coda senza segnalare nulla.
+
+    Credenziali da variabili d'ambiente (mai nel repository):
+      R2S_SMTP_USER  = giudimauro@gmail.com
+      R2S_SMTP_PASS  = password per app di Google (16 caratteri, non quella
+                       dell'account: si genera da myaccount.google.com/apppasswords)
+    """
+    import smtplib, ssl
+    from email.message import EmailMessage
+    user = os.environ.get("R2S_SMTP_USER")
+    pw = os.environ.get("R2S_SMTP_PASS")
+    if not (user and pw):
+        return False, "credenziali SMTP assenti (R2S_SMTP_USER / R2S_SMTP_PASS)"
+    m = EmailMessage()
+    m["Subject"] = oggetto
+    m["From"] = user
+    m["To"] = DEST
+    m.set_content("Rapporto R2-Sentinel in formato HTML.")
+    m.add_alternative(html, subtype="html")
+    for a in (allegati or []):
+        if not os.path.isfile(a):
+            continue
+        with open(a, "rb") as f:
+            m.add_attachment(f.read(), maintype="text", subtype="html",
+                             filename=os.path.basename(a))
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465,
+                              context=ssl.create_default_context(), timeout=30) as srv:
+            srv.login(user, pw)
+            srv.send_message(m)
+        return True, "smtp"
+    except Exception as exc:
+        return False, "SMTP: " + repr(exc)[:200]
+
+
+def invia_mailapp(html, oggetto):
+    """Ripiego. ATTENZIONE: se Mail.app è offline il messaggio resta in coda
+    senza errore — l'invio risulta riuscito ma la mail non parte."""
     import tempfile
     fd, path = tempfile.mkstemp(suffix=".html")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -122,7 +160,28 @@ def invia(html, oggetto):
     r = subprocess.run(["osascript", "-e", scpt], capture_output=True, text=True)
     try: os.unlink(path)
     except Exception: pass
-    return r.returncode == 0, (r.stderr or "").strip()
+    if r.returncode != 0:
+        return False, (r.stderr or "").strip()
+    # verifica reale: se resta in coda, NON è partita
+    q = subprocess.run(["osascript", "-e",
+                        'tell application "Mail" to return count of (every message of outbox)'],
+                       capture_output=True, text=True)
+    try:
+        n = int((q.stdout or "0").strip())
+    except ValueError:
+        n = 0
+    if n:
+        return False, (f"messaggio accodato ma NON spedito: {n} in «In uscita». "
+                       "Mail.app è offline — Mailbox > Take All Accounts Online")
+    return True, "mail.app"
+
+
+def invia(html, oggetto, allegati=None):
+    ok, info = invia_smtp(html, oggetto, allegati)
+    if ok:
+        return True, info
+    ok2, info2 = invia_mailapp(html, oggetto)
+    return ok2, (info2 if ok2 else f"{info} | {info2}")
 
 if __name__ == "__main__":
     html = costruisci()
