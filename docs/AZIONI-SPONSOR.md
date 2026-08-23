@@ -21,4 +21,8 @@ A-08|Decidere: getto d'aria, nebulizzazione, o entrambi|Fase 4 e dimensionamento
 A-09|Indicare il comune dell'installazione|Chiusura del dossier normativo, gate fase 4|-|Il regolamento comunale può essere più restrittivo di quello nazionale: scoprirlo a Unità A installata significa smontarla.|aperta
 A-10|Decidere l'autonomia target dell'Unità B|Dimensionamento batteria, fase 7|-|Il pacco batteria determina la massa del telaio: deciderlo dopo il telaio significa rifare il telaio.|aperta
 A-11|Lanciare /cost e comunicare il consumo del giorno|Chiusura del libro mastro|-|Senza, la contabilità dei token resta parziale e le stime non si calibrano mai.|aperta
+A-12|L'Unità A si alimenta da una presa esistente o serve un circuito nuovo?|Gate installazione Unità A|-|Se serve un circuito nuovo NON è fai-da-te: D.M. 37/2008 impone impresa abilitata e dichiarazione di conformità. Scoprirlo dopo significa rifare l'impianto.|aperta
+A-13|Verificare se c'è un differenziale da 30 mA sul circuito del balcone|Gate installazione Unità A|-|Alimentazione di rete in esterno senza differenziale adeguato è il rischio elettrico principale del progetto.|aperta
+A-14|Sopralluogo fotografico dal balcone: cosa entra davvero nel campo visivo|Gate installazione Unità A, privacy|-|Non è determinabile a tavolino ed è la differenza fra eccezione domestica e art. 615-bis c.p. La maschera di privacy deve essere ottica, non software.|aperta
+A-15|Regolamento condominiale + notizia preventiva all'amministratore (art. 1122 c.c.)|Gate installazione Unità A|-|È dovuta per legge. Ometterla espone a rimozione dell'impianto anche se tutto il resto è conforme.|aperta
 ```

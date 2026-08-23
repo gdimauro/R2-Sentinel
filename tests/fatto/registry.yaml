@@ -413,6 +413,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/pytest tests/bench/test_recovery.py -q"
+    requires: ["base mobile in ambiente reale", "10 blocchi provocabili"]
 
   - id: aut-g7-endurance
     role: autonomy
@@ -453,6 +454,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-autonomy"
+    requires: ["serbatoio e compressore", "cronometro"]
 
   - id: pay-a-safety-valve
     role: payload-fluidics
@@ -472,6 +474,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/python scripts/measure/record.py --criterio pay-a-field-efficacy"
+    requires: ["Unita' A installata sul balcone", ">=20 eventi di posa reali"]
 
   - id: pay-b-suction
     role: payload-fluidics
@@ -491,6 +494,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-thermal-lure"
+    requires: ["esca termica", "termocoppia o IR", "8 h di prova"]
 
   - id: pay-b-co2
     role: payload-fluidics
@@ -500,6 +504,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-co2"
+    requires: ["flussimetro CO2", "cartuccia e banco di fermentazione"]
 
   - id: pay-b-catch-ratio
     role: payload-fluidics
@@ -509,6 +514,7 @@ criteria:
     kind: bench
     status: stub
     command: ".venv/bin/python scripts/measure/record.py --criterio pay-b-catch-ratio"
+    requires: ["trappola assemblata", ">=10 notti", "protocollo di conteggio scritto prima"]
 
   - id: pay-b-fan-spectrum
     role: payload-fluidics

@@ -65,7 +65,7 @@ BANDA_UTILE = (300.0, 800.0)
 # armoniche, così il referto dice *quale* rumore dà fastidio e non solo quanto.
 SOTTOBANDE = [
     ("20-100 Hz    infrasuoni, HVAC, calpestio", 20, 100),
-    ("100-300 Hz   rete 50 Hz e armoniche, motori, voce (f0)", 100, 300),
+    ("100-300 Hz   rete 50 Hz, motori, voce (f0)", 100, 300),
     ("300-400 Hz   spalla bassa della banda utile", 300, 400),
     ("400-450 Hz   ZANZARA (Culex, basso)", 400, 450),
     ("450-500 Hz   ZANZARA", 450, 500),
@@ -139,13 +139,20 @@ def picchi_tonali(freq, spettro_mediano, larghezza_hz=60.0, soglia_db=6.0,
     return sorted(scelti, key=lambda x: x[0])
 
 
-def screening_voce(ris, quota_db=10.0):
+def screening_voce(ris, quota_bassa_db=3.0, quota_alta_db=6.0):
     """Screening GREZZO della presenza di voce, per la procedura privacy.
 
-    NON è un VAD e non va usato come garanzia. Segnala i frame in cui c'è
-    energia simultanea nella banda della fondamentale vocale (100–300 Hz) e in
-    quella delle formanti alte/sibilanti (1800–3000 Hz), entrambe sopra la
-    mediana notturna. Serve a dire *dove riascoltare*, non a decidere da solo.
+    NON è un VAD e non va usato come garanzia di assenza di voce. Segnala i
+    frame in cui sono elevate SIA la banda della fondamentale vocale
+    (100–300 Hz) SIA quella delle formanti alte e sibilanti (1800–3000 Hz),
+    ciascuna sopra la propria mediana notturna. Serve a dire *dove
+    riascoltare*, non a decidere al posto di un orecchio umano.
+
+    Limite misurato: una sorgente tonale forte e stazionaria in 100–300 Hz
+    (frigorifero a 120 Hz nel banco sintetico, -18 dBFS) alza la mediana di
+    quella banda e maschera l'elevazione dovuta alla voce, che arriva a soli
+    +4,7 dB. Per questo la soglia bassa è 3 dB e non 6, e per questo lo
+    screening NON sostituisce l'ascolto prima di condividere qualunque audio.
     """
     if not ris.potenze:
         return {"frazione_frame": 0.0, "istanti": []}
@@ -157,7 +164,7 @@ def screening_voce(ris, quota_db=10.0):
     med_a = DSP.mediana(p_alte) or 1e-30
     istanti = []
     for i, (b, a) in enumerate(zip(p_basse, p_alte)):
-        if DSP.db(b / med_b) > quota_db and DSP.db(a / med_a) > quota_db:
+        if DSP.db(b / med_b) > quota_bassa_db and DSP.db(a / med_a) > quota_alta_db:
             istanti.append(round(ris.tempi[i], 2))
     return {"frazione_frame": len(istanti) / float(len(ris.potenze)),
             "istanti": istanti[:200]}
@@ -265,7 +272,7 @@ def comando_rumore(ns) -> int:
 
 def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
                 min_armoniche, durata_min_s, buco_max_frame,
-                rifiuto_voce_db=4.0):
+                rifiuto_voce_db=3.0):
     """Rileva i tratti in cui c'è un tono in banda con struttura armonica.
 
     Metodo: pavimento di rumore per-bin = mediana temporale del file stesso.
@@ -368,9 +375,8 @@ def cerca_firma(ris, f_min, f_max, snr_db, snr_arm_db, tol_arm,
             "n_armoniche": n_arm_max,
             "armoniche": arm_rappr,
             "n_frame": len(g),
+            "frame_scartati_voce_nel_file": n_scartati_voce,
         })
-    if fuori:
-        fuori[0]["_frame_scartati_voce"] = n_scartati_voce
     return fuori
 
 
@@ -383,7 +389,7 @@ def comando_firma(ns) -> int:
             continue
         ev = cerca_firma(ris, ns.f_min, ns.f_max, ns.snr, ns.snr_armoniche,
                          ns.tolleranza_armonica, ns.min_armoniche,
-                         ns.durata_min, ns.buco_max)
+                         ns.durata_min, ns.buco_max, ns.rifiuto_voce_db)
         for e in ev:
             e["file"] = os.path.basename(p)
         tutti += ev
@@ -533,9 +539,19 @@ def comando_spettrogramma(ns) -> int:
     passo = max(1, len(ris.potenze) // n_col)
     colonne = list(range(0, len(ris.potenze), passo))[:n_col]
 
+    # I bin da 2,93 Hz sono ~171 sulla banda 300-800: illeggibili a terminale.
+    # Si aggregano in `ns.righe` bande sommandone la potenza (non la media dei
+    # dB, che sarebbe sbagliata).
+    n_righe = max(4, min(ns.righe, i1 - i0))
+    bordi = [i0 + round(k * (i1 - i0) / n_righe) for k in range(n_righe + 1)]
+    centri = [(ris.frequenze[bordi[k]] + ris.frequenze[min(bordi[k + 1],
+               len(ris.frequenze) - 1)]) / 2.0 for k in range(n_righe)]
+
     valori = []
-    for b in range(i0, i1):
-        riga = [DSP.db(float(ris.potenze[c][b])) for c in colonne]
+    for k in range(n_righe):
+        a, b = bordi[k], max(bordi[k] + 1, bordi[k + 1])
+        riga = [DSP.db(sum(float(ris.potenze[c][j]) for j in range(a, b)))
+                for c in colonne]
         valori.append(riga)
     piatti = [v for r in valori for v in r]
     lo = sorted(piatti)[int(0.10 * (len(piatti) - 1))]
@@ -547,14 +563,13 @@ def comando_spettrogramma(ns) -> int:
           f"{ns.f_min_vista:.0f}-{ns.f_max_vista:.0f} Hz   "
           f"scala {lo:.0f}..{hi:.0f} dBFS   '{SCALA}'")
     print()
-    for b in range(i1 - i0 - 1, -1, -1):
-        f = ris.frequenze[i0 + b]
-        etichetta = f"{f:6.0f} |" if (i0 + b) % 4 == 0 else "       |"
+    for k in range(n_righe - 1, -1, -1):
+        f = centri[k]
         riga = "".join(
             SCALA[min(len(SCALA) - 1, max(0, int((v - lo) / span * (len(SCALA) - 1))))]
-            for v in valori[b])
+            for v in valori[k])
         marca = " <" if BANDA_ZANZARA[0] <= f <= BANDA_ZANZARA[1] else ""
-        print(etichetta + riga + marca)
+        print(f"{f:6.0f} |" + riga + marca)
     t0 = ris.tempi[colonne[0]]
     t1 = ris.tempi[colonne[-1]]
     print("       +" + "-" * len(colonne))
@@ -620,8 +635,15 @@ def main(argv: list[str]) -> int:
     comuni(f)
     f.add_argument("--f-min", type=float, default=BANDA_ZANZARA[0])
     f.add_argument("--f-max", type=float, default=BANDA_ZANZARA[1])
-    f.add_argument("--snr", type=float, default=10.0,
-                   help="SNR minimo della fondamentale sul pavimento, dB")
+    f.add_argument("--snr", type=float, default=12.0,
+                   help="SNR minimo della fondamentale sul pavimento, dB. "
+                        "12 dB è il ginocchio misurato su segnale sintetico: "
+                        "a 10 dB i falsi positivi da fondo esplodono "
+                        "(120/h), a 12 dB spariscono senza perdere recall")
+    f.add_argument("--rifiuto-voce-db", type=float, default=3.0,
+                   help="scarta i frame in cui la banda 100-300 Hz è elevata "
+                        "di più di N dB sopra la propria mediana (voce umana). "
+                        "0 disattiva il reiettore")
     f.add_argument("--snr-armoniche", type=float, default=6.0)
     f.add_argument("--tolleranza-armonica", type=float, default=0.04,
                    help="tolleranza relativa nella ricerca di k*f0 (default 4%%)")
@@ -643,6 +665,9 @@ def main(argv: list[str]) -> int:
     s = sub.add_parser("spettrogramma", help="rendering ASCII della banda utile")
     comuni(s)
     s.add_argument("--colonne", type=int, default=110)
+    s.add_argument("--righe", type=int, default=34,
+                   help="bande di frequenza da disegnare (i bin da 2,93 Hz "
+                        "sarebbero 171 sulla banda utile: illeggibili)")
     s.add_argument("--f-min-vista", type=float, default=BANDA_UTILE[0])
     s.add_argument("--f-max-vista", type=float, default=BANDA_UTILE[1])
 

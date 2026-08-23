@@ -125,10 +125,10 @@ def verifica(percorso_wav: str, tolleranza_hz: float = 15.0) -> int:
         verita = json.load(f)
 
     ris = spettro.analizza_file(percorso_wav, 0.0, None, spettro.NFFT, None, 20000)
-    eventi = spettro.cerca_firma(ris, 400.0, 600.0, snr_db=10.0,
+    eventi = spettro.cerca_firma(ris, 400.0, 600.0, snr_db=12.0,
                                  snr_arm_db=6.0, tol_arm=0.04,
                                  min_armoniche=1, durata_min_s=0.3,
-                                 buco_max_frame=2)
+                                 buco_max_frame=2, rifiuto_voce_db=3.0)
 
     veri = verita["passaggi"]
     trovati = []
