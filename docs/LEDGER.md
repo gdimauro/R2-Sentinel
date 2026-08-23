@@ -40,6 +40,23 @@ risparmiare.
 | | **Totale misurato del giorno** | **83.366** | | *parziale — due voci non rilevate* |
 | | **Budget giornaliero** | **750.000** | | ~9 operazioni da 83k, o 5–15 sessioni di lavoro |
 
+### ⚠ Il budget giornaliero è stato superato, e si è visto
+
+Il tetto era **750.000 token/giorno**. I soli agenti misurati fanno **322.870**,
+ma tre voci non sono state rilevate e — soprattutto — **la capienza settimanale
+si è esaurita nel pomeriggio**, con reset annunciato al 25 agosto. Il consumo
+reale della giornata è quindi molto oltre i 750k.
+
+La causa è identificabile: **quattro agenti lanciati in parallelo**. Il costo
+non era visibile al momento del lancio, e il tetto giornaliero non lo ha
+intercettato perché il vincolo vero è la **finestra mobile di 5 ore**, non il
+totale del giorno.
+
+**Regola che ne consegue (P-04, in attesa di decisione dello sponsor):**
+massimo **due agenti in parallelo**, salvo motivazione esplicita. E ciò che il
+coordinamento può fare in linea — come la verifica dell'ammanco del 9%, chiusa
+con una prova sintetica in pochi secondi — non va delegato a un agente.
+
 > ⚠ **Debito contabile del giorno 1.** Due voci su tre non sono state rilevate
 > perché la contabilità è stata istituita a giornata in corso. È il tipo di
 > buco che rende inutile un libro mastro se si ripete: da domani ogni sessione
