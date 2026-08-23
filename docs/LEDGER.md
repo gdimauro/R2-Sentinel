@@ -24,7 +24,13 @@ consuma **capienza** (finestra mobile di 5 ore + tetto settimanale), non denaro.
 Il libro mastro li conta comunque, perché la capienza esaurita blocca il lavoro
 esattamente come farebbe un budget finito.
 
-**Budget:** **750.000 token/giorno**, deciso il 2026-08-23. Non si accumula:
+**Budget: monte settimanale di ~5.250.000 token** (dal 2026-08-24; prima era
+750.000/giorno). Non si accumula fra una settimana e l'altra — la capienza non
+spesa evapora — ma **dentro la settimana si sposta liberamente**: una giornata
+intensa seguita da giornate ferme è la forma attesa, non uno sforamento.
+
+Il numero da sorvegliare è **quanto resta della settimana rispetto ai giorni al
+reset**, non il consumo del giorno. Non si accumula:
 il non speso è perso, quindi il valore sta nel *quando* si spende, non nel
 risparmiare.
 
@@ -40,7 +46,7 @@ risparmiare.
 | | **Totale misurato del giorno** | **83.366** | | *parziale — due voci non rilevate* |
 | | **Budget giornaliero** | **750.000** | | ~9 operazioni da 83k, o 5–15 sessioni di lavoro |
 
-### ⚠ Il budget giornaliero è stato superato, e si è visto
+### ⚠ Perché il budget giornaliero è stato sostituito
 
 Il tetto era **750.000 token/giorno**. I soli agenti misurati fanno **322.870**,
 ma tre voci non sono state rilevate e — soprattutto — **la capienza settimanale
@@ -52,7 +58,10 @@ non era visibile al momento del lancio, e il tetto giornaliero non lo ha
 intercettato perché il vincolo vero è la **finestra mobile di 5 ore**, non il
 totale del giorno.
 
-**Regola che ne consegue (P-04, in attesa di decisione dello sponsor):**
+**Prima conseguenza (24 agosto):** il contatore giornaliero è stato sostituito
+da un monte settimanale, perché non misurava il vincolo reale.
+
+**Seconda conseguenza (P-04, in attesa di decisione dello sponsor):**
 massimo **due agenti in parallelo**, salvo motivazione esplicita. E ciò che il
 coordinamento può fare in linea — come la verifica dell'ammanco del 9%, chiusa
 con una prova sintetica in pochi secondi — non va delegato a un agente.

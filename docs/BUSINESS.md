@@ -69,7 +69,35 @@ Conseguenza pratica: l'unico spreco reale è il lavoro **da rifare**, perché
 consuma capienza senza produrre nulla. Un mandato vago costa più di una
 sessione lunga.
 
-**Budget deciso: 750.000 token/giorno** (23 agosto 2026). Comprano circa
+### Il budget è settimanale, non giornaliero (24 agosto 2026)
+
+Prima versione: 750.000 token/giorno. **Corretta**, perché la giornata non è
+l'unità giusta.
+
+Su abbonamento la capienza non si accumula e non si può decidere che lo faccia:
+il vincolo effettivo è una **finestra mobile di 5 ore** più un **tetto
+settimanale**. Ciò che non si spende in una finestra evapora. Il 23 agosto il
+tetto settimanale è saltato nel pomeriggio mentre il budget giornaliero sulla
+carta era ancora quasi intatto: la prova che il contatore giornaliero non
+misurava il vincolo reale.
+
+**Monte settimanale: ~5.250.000 token** (l'equivalente di 750k × 7), gestito
+come un unico serbatoio da spendere quando serve.
+
+Cosa cambia in pratica:
+
+- Una giornata da 2 M seguita da tre giornate quasi ferme è **legittima**, non
+  uno sforamento. È anzi la forma attesa: il progetto alterna fasi di analisi
+  intensa a fasi di attesa di hardware.
+- Il numero da sorvegliare non è più «quanto ho speso oggi» ma **«quanto resta
+  della settimana e quanti giorni mancano al reset»**.
+- Il rischio si sposta: non è più sforare il giorno, è **esaurire la settimana
+  di martedì**. Che è ciò che è successo.
+- Il vincolo operativo resta la finestra di 5 ore, e non è aggirabile: è la
+  ragione per cui non si lanciano più di due agenti in parallelo.
+
+**Budget storico: 750.000 token/giorno** (23 agosto 2026), superato dal monte
+settimanale il giorno dopo. Comprano circa
 **6–12 sessioni di lavoro reale**, oppure **una singola indagine multi-agente**
 su un problema che non si riesce a chiudere altrimenti. Non si accumula: il
 valore sta nel *quando* si spende. Il consuntivo giornaliero è in `LEDGER.md`.
