@@ -1,0 +1,20 @@
+# Git LFS — output CAD binari o voluminosi (vedi cad/export/)
+*.step  filter=lfs diff=lfs merge=lfs -text
+*.stp   filter=lfs diff=lfs merge=lfs -text
+*.stl   filter=lfs diff=lfs merge=lfs -text
+*.3mf   filter=lfs diff=lfs merge=lfs -text
+*.f3d   filter=lfs diff=lfs merge=lfs -text
+
+# I sorgenti CadQuery restano testo diffabile: non passano da LFS.
+
+# Normalizzazione fine riga
+*.md    text
+*.py    text
+*.yaml  text
+*.yml   text
+*.json  text
+*.toml  text
+*.c     text
+*.h     text
+*.cpp   text
+*.hpp   text

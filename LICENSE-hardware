@@ -1,0 +1,19 @@
+Il contenuto hardware di questo repository (file CAD in cad/, distinta base in
+hardware/, schemi) è rilasciato sotto CERN Open Hardware Licence Version 2 -
+Weakly Reciprocal (CERN-OHL-W v2).
+
+Copyright (c) 2026 [IL TUO NOME]
+
+TESTO DELLA LICENZA — DA INSERIRE
+---------------------------------
+Il testo integrale non è incluso qui. Scaricalo dalla fonte ufficiale:
+
+  https://ohwr.org/project/cernohl/wikis/Documents/CERN-OHL-version-2
+
+oppure, più semplicemente, usa il selettore licenze di GitHub:
+  Add file > Create new file > digita "LICENSE" > "Choose a license template"
+
+Perché weakly reciprocal (-W) e non strongly (-S):
+la variante W obbliga a condividere le modifiche al progetto stesso, ma non
+contamina i sistemi più grandi in cui l'hardware viene integrato. È la scelta
+usuale per progetti che si vuole restino aperti senza scoraggiarne il riuso.

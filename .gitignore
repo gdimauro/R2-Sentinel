@@ -1,0 +1,33 @@
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# macOS
+.DS_Store
+
+# Python (CadQuery, tooling visione/acustica)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# ESP-IDF / PlatformIO (firmware/)
+build/
+.pio/
+sdkconfig.old
+
+# ROS 2 (software/ros2_ws/)
+install/
+log/
+
+# Modelli e dataset — non vanno nel repo
+*.pt
+*.onnx
+*.hef
+datasets/
+
+# Strumenti locali
+.tokensave/
