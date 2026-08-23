@@ -162,18 +162,30 @@ def invia_mailapp(html, oggetto):
     except Exception: pass
     if r.returncode != 0:
         return False, (r.stderr or "").strip()
-    # verifica reale: se resta in coda, NON è partita
-    q = subprocess.run(["osascript", "-e",
-                        'tell application "Mail" to return count of (every message of outbox)'],
-                       capture_output=True, text=True)
-    try:
-        n = int((q.stdout or "0").strip())
-    except ValueError:
-        n = 0
-    if n:
-        return False, (f"messaggio accodato ma NON spedito: {n} in «In uscita». "
-                       "Mail.app è offline — Mailbox > Take All Accounts Online")
-    return True, "mail.app"
+    # Verifica reale: se resta in coda, NON è partita.
+    #
+    # ATTENZIONE — questo controllo va fatto CON ATTESA. La prima versione
+    # leggeva la coda subito dopo `send` e dichiarava fallimento per messaggi
+    # che sarebbero partiti un istante dopo: lo stesso errore, rovesciato, del
+    # valore di ritorno che dichiarava successo senza verificare l'effetto
+    # (lezione L-03 del 2026-08-23). Uno stato transitorio non è un esito.
+    import time as _t
+    scadenza = _t.time() + 20
+    n = 1
+    while _t.time() < scadenza:
+        q = subprocess.run(
+            ["osascript", "-e",
+             'tell application "Mail" to return count of (every message of outbox)'],
+            capture_output=True, text=True)
+        try:
+            n = int((q.stdout or "0").strip())
+        except ValueError:
+            n = 0
+        if n == 0:
+            return True, "mail.app"
+        _t.sleep(2)
+    return False, (f"messaggio fermo in coda dopo 20 s: {n} in «In uscita». "
+                   "Mail.app è offline — Casella > Attiva tutti gli account")
 
 
 def invia(html, oggetto, allegati=None):
