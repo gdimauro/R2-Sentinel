@@ -36,6 +36,27 @@ def main():
         if num not in su_disco:
             err.append(f"{num}: a registro ma il file NON esiste")
 
+    # Un numero di protocollo assegnato a un modulo vuoto è peggio di un numero
+    # non assegnato: il registro certifica l'immutabilità di una pagina bianca e
+    # dichiara istruito un atto che non esiste. Difetto rilevato il 2026-08-24,
+    # dopo che 5 atti su 8 erano stati protocollati e annunciati come completi.
+    SEZIONI = ("## Fatto", "## Posizione di chi solleva", "## Dispositivo", "## Effetti")
+    for num in sorted(su_disco):
+        testo = io.open(os.path.join(DIR, num + ".md"), encoding="utf-8").read()
+        vuote = []
+        for i, sez in enumerate(SEZIONI):
+            if sez not in testo:
+                vuote.append(sez + " (assente)")
+                continue
+            corpo = testo.split(sez, 1)[1].split("\n## ", 1)[0]
+            if len(corpo.strip()) < 40:
+                vuote.append(sez)
+        if vuote:
+            err.append(f"{num}: MODULO VUOTO — sezioni non compilate: {', '.join(vuote)}. "
+                       f"Un numero di protocollo su un atto non istruito non vale nulla.")
+        if "esito: in attesa" in testo and len(testo) < 1200:
+            err.append(f"{num}: esito «in attesa» su un atto senza istruttoria.")
+
     # buchi nella numerazione
     for anno in {n[4:8] for n in su_disco}:
         nn = sorted(int(n[9:]) for n in su_disco if n[4:8] == anno)
