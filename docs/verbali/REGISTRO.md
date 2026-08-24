@@ -5,7 +5,7 @@ l'immutabilità**: `scripts/ci/check_verbali.py` fallisce se un verbale
 già protocollato viene modificato. Un atto sbagliato non si corregge:
 si emette un nuovo verbale che lo rettifica.
 
-Atti protocollati: **9**
+Atti protocollati: **10**
 
 | Protocollo | Data | Tipo | Oggetto | Esito | Impronta |
 |---|---|---|---|---|---|
@@ -18,3 +18,4 @@ Atti protocollati: **9**
 | [VRB-2026-0007](VRB-2026-0007.md) | 2026-08-24 | decisione | Sostituzione del budget giornaliero con un monte settimanale | accolta con rettifica | `b3422d241e3b66f9` |
 | [VRB-2026-0008](VRB-2026-0008.md) | 2026-08-24 | decisione | Rigetto della luce libera di 4 mm del pattino anteriore | respinta | `d48f0c502f4f8f1c` |
 | [VRB-2026-0009](VRB-2026-0009.md) | 2026-08-24 | accettazione-rischio | Accettazione del rischio residuo di ribaltamento dell'Unita B | rischio accettato | `4c000f4c9539ee51` |
+| [VRB-2026-0010](VRB-2026-0010.md) | 2026-08-24 | contestazione | Il bilancio energetico dell'Unita A non chiude con il pacco previsto | accolta | `258675f5b322ab8a` |

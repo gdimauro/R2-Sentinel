@@ -27,7 +27,7 @@ Da qui la scelta architetturale centrale: **due unità separate**.
 | Bersaglio | Volatili | Zanzare |
 | Percezione | Visione (YOLO su acceleratore NPU) | Acustica (battito alare 400–600 Hz) |
 | Intervento | Getto d'aria mirato, non lesivo | Aspirazione con esca |
-| Alimentazione | Rete | Batteria LiFePO4 + dock |
+| Alimentazione | Batteria LiFePO4 (ricarica da definire) | Batteria LiFePO4 + dock |
 
 ## Due idee controintuitive
 

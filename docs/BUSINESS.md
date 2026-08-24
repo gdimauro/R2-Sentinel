@@ -198,8 +198,9 @@ vendita di kit e unità assemblate, vendita dei soli pezzi difficili da
 produrre, servizi, contenuti. Da decidere *prima* di parlare di canali.
 
 **b) Vendere non è replicare.** Un dispositivo commerciale che agisce su fauna
-protetta, con un recipiente a 5 bar, alimentazione di rete in esterno,
-batteria al litio e telecamere in ambiente domestico entra in un perimetro
+protetta, con un recipiente a 5 bar, due pacchi al litio di cui uno
+permanentemente all'aperto (D-29) e telecamere in ambiente domestico entra in
+un perimetro
 completamente diverso da un progetto amatoriale: marcatura CE, direttiva
 attrezzature a pressione, sicurezza elettrica, GDPR, responsabilità da
 prodotto. Non è un ostacolo insormontabile, è **un secondo progetto** con un
